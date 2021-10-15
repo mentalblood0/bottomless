@@ -24,5 +24,4 @@ def test_invalid_key():
 
 	db.delete('key')
 
-	with pytest.raises(KeyError):
-		interface['key'] == 'value'
+	assert interface['key'] == None

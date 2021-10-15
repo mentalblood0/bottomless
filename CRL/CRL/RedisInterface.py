@@ -37,6 +37,9 @@ class RedisInterface:
 	def key(self):
 		return self._key
 	
+	def keys(self):
+		return self.db.scan(match=f'{self.key}.*')
+	
 	def __getitem__(self, key):
 		return RedisInterface(
 			self.db, 
@@ -57,22 +60,37 @@ class RedisInterface:
 		self[key]._set(value)
 	
 	def _delete(self):
-		self.db.delete(self.key)
+
+		keys_to_delete = [self.key] + self.db.scan(match=f"{self.key}.*")[1]
+
+		if keys_to_delete:
+			if not self.db.delete(*keys_to_delete):
+				raise KeyError(f"No keys starting with '{self.key}'")
 
 	def __delitem__(self, key):
 		self[key]._delete()
 	
-	def __str__(self):
+	def _get(self):
 
 		value = self.db.get(self.key)
 
-		if value == None:
-			raise KeyError(f"No such key: '{self.key}'")
-
-		return value.decode()
+		try:
+			result = self.deserialize(value)
+		except Exception:
+			result = value.decode() if type(value) == bytes else value
+		
+		return result
 	
 	def __eq__(self, other):
-		return str(self) == str(other)
+
+		print('__eq__', self, other)
+
+		self_value = self._get()
+		other_value = other._get() if hasattr(other, '_get') else other
+
+		print('values:', self_value, other_value)
+
+		return self_value == other_value
 
 
 
