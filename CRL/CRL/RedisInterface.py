@@ -62,8 +62,17 @@ class RedisInterface:
 	def __delitem__(self, key):
 		self[key]._delete()
 	
-	def __repr__(self):
-		return 
+	def __str__(self):
+
+		value = self.db.get(self.key)
+
+		if value == None:
+			raise KeyError(f"No such key: '{self.key}'")
+
+		return value.decode()
+	
+	def __eq__(self, other):
+		return str(self) == str(other)
 
 
 
