@@ -1,0 +1,5 @@
+{
+    "db": {
+        "url": "redis://localhost:6379"
+    }
+}
