@@ -38,7 +38,17 @@ class RedisInterface:
 		return self._key
 	
 	def keys(self):
-		return self.db.scan(match=f'{self.key}.*')
+
+		pattern = f'{self.key}.*' if self.key else '*'
+
+		absolute_keys = self.db.scan(match=pattern)[1]
+		absolute_paths = [k.decode().split('.') for k in absolute_keys]
+		not_long_absolute_paths = [p for p in absolute_paths if len(p) == len(self.path) + 1]
+
+		return [
+			p[-1]
+			for p in not_long_absolute_paths
+		]
 	
 	def __getitem__(self, key):
 		return RedisInterface(
@@ -61,7 +71,9 @@ class RedisInterface:
 	
 	def _delete(self):
 
-		keys_to_delete = [self.key] + self.db.scan(match=f"{self.key}.*")[1]
+		pattern = f'{self.key}.*' if self.key else '*'
+		
+		keys_to_delete = [self.key] + self.db.scan(match=pattern)[1]
 
 		if keys_to_delete:
 			if not self.db.delete(*keys_to_delete):
@@ -83,14 +95,23 @@ class RedisInterface:
 	
 	def __eq__(self, other):
 
-		print('__eq__', self, other)
-
 		self_value = self._get()
 		other_value = other._get() if hasattr(other, '_get') else other
 
-		print('values:', self_value, other_value)
-
 		return self_value == other_value
+	
+	def __call__(self):
+
+		self_value = self._get()
+
+		result = {
+			'self': self._get()
+		} if self_value != None else {}
+
+		return result | {
+			k: self[k]()
+			for k in self.keys()
+		}
 
 
 
