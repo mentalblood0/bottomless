@@ -17,14 +17,16 @@ def test_basic():
 
 	interface['1'] = 'one'
 	interface['2'] = 'two'
-	interface['1']['1'] = 'one.one'
+	interface['1']['1']['1'] = 'one.one.one'
 	interface['1']['2'] = 'one.two'
 
 	assert interface() == {
 		'1': {
 			'self': 'one',
 			'1': {
-				'self': 'one.one'
+				'1': {
+					'self': 'one.one.one'
+				}
 			},
 			'2': {
 				'self': 'one.two'
