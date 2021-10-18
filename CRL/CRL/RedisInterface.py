@@ -61,6 +61,8 @@ class RedisInterface:
 
 	def _set(self, value):
 
+		self.db.delete(self.key)
+
 		if type(value) == dict:
 			for k, v in value.items():
 				self[k] = v
@@ -71,6 +73,10 @@ class RedisInterface:
 			self.db.set(self.key, value)
 
 	def __setitem__(self, key, value):
+
+		for i in range(len(self.path)):
+			self.db.delete(self.compose_key(self.path[:i+1]))
+
 		self[key]._set(value)
 	
 	def _delete(self):
@@ -107,12 +113,10 @@ class RedisInterface:
 	def __call__(self):
 
 		self_value = self._get()
+		if self_value != None:
+			return self_value
 
-		result = {
-			'self': self._get()
-		} if self_value != None else {}
-
-		return result | {
+		return {
 			k: self[k]()
 			for k in self.keys()
 		}

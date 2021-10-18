@@ -22,17 +22,10 @@ def test_basic():
 
 	assert interface() == {
 		'1': {
-			'self': 'one',
 			'1': {
-				'1': {
-					'self': 'one.one.one'
-				}
+				'1': 'one.one.one'
 			},
-			'2': {
-				'self': 'one.two'
-			}
+			'2': 'one.two'
 		},
-		'2': {
-			'self': 'two'
-		}
+		'2': 'two'
 	}
