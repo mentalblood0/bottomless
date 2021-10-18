@@ -60,10 +60,15 @@ class RedisInterface:
 		)
 
 	def _set(self, value):
-		
-		data = self.serialize(value)
 
-		self.db.set(self.key, data)
+		if type(value) == dict:
+			for k, v in value.items():
+				self[k] = v
+		elif type(value) == list:
+			for i in range(len(value)):
+				self[i] = value[i]
+		else:
+			self.db.set(self.key, value)
 
 	def __setitem__(self, key, value):
 		self[key]._set(value)

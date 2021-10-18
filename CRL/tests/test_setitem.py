@@ -22,3 +22,19 @@ def test_basic():
 	assert interface['2'] == 'two'
 	assert interface['1']['1'] == 'one.one'
 	assert interface['1']['2'] == 'one.two'
+
+
+def test_complex():
+
+	interface = RedisInterface(db)
+
+	interface._delete()
+
+	interface['1'] = {
+		'1': 'one.one',
+		'2': 'one.two'
+	}
+
+	# assert interface['1'] == 'one'
+	assert interface['1']['1'] == 'one.one'
+	assert interface['1']['2'] == 'one.two'
