@@ -12,7 +12,7 @@ db = Redis.from_url(config['db']['url'])
 def test_invalid_index():
 
 	interface = RedisInterface(db)
-	interface.delete()
+	interface.clear()
 
 	with pytest.raises(IndexError):
 		interface[1] = '1'
@@ -24,7 +24,7 @@ def test_invalid_index():
 def test_append():
 
 	interface = RedisInterface(db)
-	interface.delete()
+	interface.clear()
 
 	interface['key'] = 'value'
 	interface['another_key'] = 'another_value'

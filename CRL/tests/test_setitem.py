@@ -28,7 +28,7 @@ def test_complex():
 
 	interface = RedisInterface(db)
 
-	interface.delete()
+	interface.clear()
 
 	interface['1'] = {
 		'1': 'one.one',

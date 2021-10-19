@@ -12,7 +12,7 @@ db = Redis.from_url(config['db']['url'])
 def test_basic():
 
 	interface = RedisInterface(db)
-	interface.delete()
+	interface.clear()
 
 	interface |= {
 		'1': {

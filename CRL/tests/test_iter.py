@@ -12,7 +12,7 @@ db = Redis.from_url(config['db']['url'])
 def test_basic():
 
 	interface = RedisInterface(db)
-	interface.delete()
+	interface.clear()
 
 	interface += [1, 2, 3, 4]
 
@@ -20,3 +20,5 @@ def test_basic():
 	for e in interface:
 		assert e == interface[i]
 		i += 1
+	
+	assert list(interface) == [1, 2, 3, 4]
