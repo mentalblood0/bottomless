@@ -30,7 +30,21 @@ def test_basic():
 	assert list(interface) == l
 
 
-def test_nonexistent_key():
+def test_valid_key():
+
+	interface = RedisInterface(db)
+	interface.clear()
+
+	sessions = [{
+		'name': i
+	} for i in range(5)]
+
+	interface['sessions'] = sessions
+
+	assert list(interface['sessions']) == sessions
+
+
+def test_invalid_key():
 
 	interface = RedisInterface(db)
 	interface.clear()
