@@ -18,16 +18,6 @@ def test_valid_key():
 	del interface['key']
 
 
-def test_invalid_key():
-
-	interface = RedisInterface(db)
-
-	db.delete('key')
-
-	with pytest.raises(KeyError):
-		del interface['key']
-
-
 def test_cascade():
 
 	interface = RedisInterface(db)

@@ -14,15 +14,15 @@ def test_basic():
 	interface = RedisInterface(db)
 	interface._delete()
 
-	try:
-		interface._delete()
-	except KeyError:
-		pass
-
-	interface['1'] = 'one'
-	interface['2'] = 'two'
-	interface['1']['1']['1'] = 'one.one.one'
-	interface['1']['2'] = 'one.two'
+	interface |= {
+		'1': {
+			'1': {
+				'1': 'one.one.one'
+			},
+			'2': 'one.two'
+		},
+		'2': 'two'
+	}
 
 	assert interface() == {
 		'1': {

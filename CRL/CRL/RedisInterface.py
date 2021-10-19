@@ -9,7 +9,7 @@ class RedisInterface:
 		db, 
 		path=[], 
 		check_path=lambda path: not any([(not p) or ('.' in p) for p in path]), 
-		compose_key='.'.join, 
+		compose_key=lambda p: '.'.join(p), 
 		serialize=json.dumps, 
 		deserialize=json.loads
 	):
@@ -21,6 +21,8 @@ class RedisInterface:
 		self.deserialize = deserialize
 		self.check_path = check_path
 		self.compose_key = compose_key
+
+		self._length = 0
 
 		assert self.check_path(self.path)
 		self._key = self.compose_key(self.path)
@@ -50,6 +52,10 @@ class RedisInterface:
 		]
 	
 	def __getitem__(self, key):
+
+		if type(key) == int:
+			key = str(key)
+
 		return RedisInterface(
 			self.db, 
 			self.path + [key],
@@ -74,8 +80,26 @@ class RedisInterface:
 
 	def __setitem__(self, key, value):
 
+		if type(key) == int:
+			
+			if key < 0 or key >= self._length:
+				raise IndexError('list assignment index out of range')
+		
+			key = str(key)
+
+		if len(self.path):
+			keys = {
+				k: True
+				for k in 
+				self.db.scan(match=f"{self.path[0]}")[1] + 
+				self.db.scan(match=f"{self.path[0]}.*")[1]
+			}
+
+		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
 		for i in range(len(self.path)):
-			self.db.delete(self.compose_key(self.path[:i+1]))
+			key_to_delete = self.compose_key(self.path[:i+1]).encode() # because there byte strings in keys
+			if key_to_delete in keys:
+				self.db.delete(key_to_delete)
 
 		self[key]._set(value)
 	
@@ -87,7 +111,8 @@ class RedisInterface:
 
 		if keys_to_delete:
 			if not self.db.delete(*keys_to_delete):
-				raise KeyError(f"No keys starting with '{self.key}'")
+				pass
+				# raise KeyError(f"No keys starting with '{self.key}'")
 
 	def __delitem__(self, key):
 		self[key]._delete()
@@ -120,6 +145,30 @@ class RedisInterface:
 			k: self[k]()
 			for k in self.keys()
 		}
+	
+	def __contains__(self, item):
+		return item in self.keys()
+	
+	def update(self, other: dict):
+		self._set(other)
+	
+	def __ior__(self, other): # |=
+		self.update(other)
+		return self
+	
+	def __len__(self):	
+		return self._length
+	
+	def append(self, other: list):
+
+		self._length += len(other)
+		
+		for i in range(len(other)):
+			self[i] = other[i]
+	
+	def __iadd__(self, other: list): # +=
+		self.append(other)
+		return self
 
 
 
