@@ -16,6 +16,8 @@ def test_basic():
 
 	interface += [1, 2, 3, 4]
 
+	assert sorted(interface.keys()) == ['0', '1', '2', '3']
+
 	i = 0
 	for e in interface:
 		assert e == interface[i]

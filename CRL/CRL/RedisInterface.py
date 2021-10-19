@@ -1,6 +1,6 @@
 import json
 
-from CRL.RedisInterfaceIterator import RedisInterfaceIterator
+from . import RedisInterfaceIterator
 
 
 
@@ -24,8 +24,6 @@ class RedisInterface:
 		self.check_path = check_path
 		self.compose_key = compose_key
 
-		self._length = 0
-
 		assert self.check_path(self.path)
 		self._key = self.compose_key(self.path)
 	
@@ -43,9 +41,11 @@ class RedisInterface:
 	
 	def keys(self):
 
-		pattern = f'{self.key}.*' if self.key else '*'
+		if self.key:
+			absolute_keys = self.db.scan(match=f'{self.key}.*')[1]
+		else:
+			absolute_keys = self.db.keys()
 
-		absolute_keys = self.db.scan(match=pattern)[1]
 		absolute_paths = [k.decode().split('.') for k in absolute_keys]
 
 		return [
@@ -68,6 +68,8 @@ class RedisInterface:
 		)
 
 	def _set(self, value):
+		
+		print('_set', self.key, value)
 
 		self.db.delete(self.key)
 
@@ -83,17 +85,13 @@ class RedisInterface:
 	def __setitem__(self, key, value):
 
 		if type(key) == int:
-			
-			if key < 0 or key >= self._length:
-				raise IndexError('list assignment index out of range')
-		
 			key = str(key)
 
 		if len(self.path):
 			keys = {
 				k: True
 				for k in 
-				self.db.scan(match=f"{self.path[0]}")[1] + 
+				[self.path[0].encode()] + 
 				self.db.scan(match=f"{self.path[0]}.*")[1]
 			}
 
@@ -104,13 +102,15 @@ class RedisInterface:
 				self.db.delete(key_to_delete)
 
 		self[key]._set(value)
+
+		print('__setitem__', key, value)
 	
 	def clear(self):
 
 		if self.key:
 			keys_to_delete = [self.key] + self.db.scan(match=f'{self.key}.*')[1]
 		else:
-			keys_to_delete = self.db.scan(match='*')[1]
+			keys_to_delete = self.db.keys()
 
 		if keys_to_delete:
 			if not self.db.delete(*keys_to_delete):
@@ -159,15 +159,17 @@ class RedisInterface:
 		self.update(other)
 		return self
 	
-	def __len__(self):	
-		return self._length
+	def __len__(self):
+		print('__len__', self.keys())
+		return len(self.keys())
 	
 	def append(self, other: list):
 
-		self._length += len(other)
+		initial_length = len(self)
 		
 		for i in range(len(other)):
-			self[i] = other[i]
+			self[initial_length + i] = other[i]
+			print('keys:', self.keys())
 	
 	def __iadd__(self, other: list): # +=
 		self.append(other)

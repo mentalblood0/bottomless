@@ -1,20 +1,9 @@
-class RedisInterfaceIterator:
+def RedisInterfaceIterator(interface):
 
-	def __init__(self, interface):
-		
-		self.current = 0
-		self.length = len(interface)
-		self.interface = interface
-	
-	def __iter__(self):
-		return self
-	
-	def __next__(self):
+	for k in sorted(interface.keys()):
+		yield interface[k]._get()
 
-		if self.current == self.length:
-			raise StopIteration()
-		
-		result = self.interface[self.current]
-		self.current += 1
 
-		return result
+
+import sys
+sys.modules[__name__] = RedisInterfaceIterator
