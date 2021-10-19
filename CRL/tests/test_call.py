@@ -9,15 +9,18 @@ from CRL import RedisInterface
 db = Redis.from_url(config['db']['url'])
 
 
-def test_basic():
+def test_nonexistent_key():
 
 	interface = RedisInterface(db)
 	interface.clear()
 
-	try:
-		interface.clear()
-	except KeyError:
-		pass
+	assert interface['key'] == None
+
+
+def test_deep():
+
+	interface = RedisInterface(db)
+	interface.clear()
 
 	interface['1'] = 'one'
 	interface['2'] = 'two'
