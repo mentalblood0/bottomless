@@ -14,13 +14,17 @@ def test_basic():
 	interface = RedisInterface(db)
 	interface.clear()
 
-	interface += [1, 2, 3, 4]
+	l = [{
+		'key': i
+	} for i in range(1, 4+1)]
+
+	interface += l
 
 	assert sorted(interface.keys()) == ['0', '1', '2', '3']
 
 	i = 0
 	for e in interface:
-		assert e == interface[i]
+		assert e == interface[i]()
 		i += 1
 	
-	assert list(interface) == [1, 2, 3, 4]
+	assert list(interface) == l
