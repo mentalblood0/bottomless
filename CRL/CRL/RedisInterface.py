@@ -1,5 +1,7 @@
 import json
 
+from CRL.RedisInterfaceIterator import RedisInterfaceIterator
+
 
 
 class RedisInterface:
@@ -169,6 +171,9 @@ class RedisInterface:
 	def __iadd__(self, other: list): # +=
 		self.append(other)
 		return self
+	
+	def __iter__(self):
+		return RedisInterfaceIterator(self)
 
 
 
