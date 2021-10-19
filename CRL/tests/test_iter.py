@@ -28,3 +28,11 @@ def test_basic():
 		i += 1
 	
 	assert list(interface) == l
+
+
+def test_nonexistent_key():
+
+	interface = RedisInterface(db)
+	interface.clear()
+
+	assert list(interface['sessions']) == []
