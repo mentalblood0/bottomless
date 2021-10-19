@@ -68,8 +68,6 @@ class RedisInterface:
 		)
 
 	def _set(self, value):
-		
-		print('_set', self.key, value)
 
 		self.db.delete(self.key)
 
@@ -102,8 +100,6 @@ class RedisInterface:
 				self.db.delete(key_to_delete)
 
 		self[key]._set(value)
-
-		print('__setitem__', key, value)
 	
 	def clear(self):
 
@@ -160,7 +156,6 @@ class RedisInterface:
 		return self
 	
 	def __len__(self):
-		print('__len__', self.keys())
 		return len(self.keys())
 	
 	def append(self, other: list):
@@ -169,7 +164,6 @@ class RedisInterface:
 		
 		for i in range(len(other)):
 			self[initial_length + i] = other[i]
-			print('keys:', self.keys())
 	
 	def __iadd__(self, other: list): # +=
 		self.append(other)
