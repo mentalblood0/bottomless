@@ -15,6 +15,7 @@ def test_nonexistent_key():
 	interface.clear()
 
 	assert interface['key'] == None
+	assert interface['key']() == None
 
 
 def test_deep():

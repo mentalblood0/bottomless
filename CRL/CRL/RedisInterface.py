@@ -142,7 +142,7 @@ class RedisInterface:
 		return {
 			k: self[k]()
 			for k in self.keys()
-		}
+		} or None
 	
 	def __contains__(self, item):
 		return item in self.keys()
