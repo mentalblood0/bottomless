@@ -42,10 +42,10 @@ class RedisInterface:
 
 		absolute_paths = [k.decode().split('.') for k in absolute_keys]
 
-		return [
+		return {
 			p[len(self.path)]
 			for p in absolute_paths
-		]
+		}
 	
 	def __getitem__(self, key):
 

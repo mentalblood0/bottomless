@@ -36,11 +36,15 @@ def test_valid_key():
 	interface.clear()
 
 	sessions = [{
-		'name': i
+		f'session {i}': {
+			'name': i,
+			'data': 'lalala'
+		}
 	} for i in range(5)]
 
 	interface['sessions'] = sessions
 
+	assert len(interface['sessions'].keys()) == 5
 	assert list(interface['sessions']) == sessions
 
 
