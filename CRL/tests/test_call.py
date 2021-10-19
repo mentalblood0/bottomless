@@ -12,10 +12,10 @@ db = Redis.from_url(config['db']['url'])
 def test_basic():
 
 	interface = RedisInterface(db)
-	interface._delete()
+	interface.delete()
 
 	try:
-		interface._delete()
+		interface.delete()
 	except KeyError:
 		pass
 

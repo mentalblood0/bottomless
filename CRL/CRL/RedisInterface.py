@@ -105,7 +105,7 @@ class RedisInterface:
 
 		self[key]._set(value)
 	
-	def _delete(self):
+	def delete(self):
 
 		pattern = f'{self.key}.*' if self.key else '*'
 
@@ -117,7 +117,7 @@ class RedisInterface:
 				# raise KeyError(f"No keys starting with '{self.key}'")
 
 	def __delitem__(self, key):
-		self[key]._delete()
+		self[key].delete()
 	
 	def _get(self):
 
@@ -154,7 +154,7 @@ class RedisInterface:
 	def update(self, other: dict):
 		self._set(other)
 	
-	def __ior__(self, other): # |=
+	def __ior__(self, other: dict): # |=
 		self.update(other)
 		return self
 	
