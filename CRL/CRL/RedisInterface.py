@@ -1,5 +1,3 @@
-import json
-
 from . import RedisInterfaceIterator
 
 
@@ -11,16 +9,12 @@ class RedisInterface:
 		db, 
 		path=[], 
 		check_path=lambda path: not any([(not p) or ('.' in p) for p in path]), 
-		compose_key=lambda p: '.'.join(p), 
-		serialize=json.dumps, 
-		deserialize=json.loads
+		compose_key=lambda p: '.'.join(p)
 	):
 		
 		self._db = db
 		self._path = path
 
-		self.serialize = serialize
-		self.deserialize = deserialize
 		self.check_path = check_path
 		self.compose_key = compose_key
 
@@ -62,9 +56,7 @@ class RedisInterface:
 			self.db, 
 			self.path + [key],
 			self.check_path,
-			self.compose_key,
-			self.serialize,
-			self.deserialize
+			self.compose_key
 		)
 
 	def _set(self, value):
@@ -120,12 +112,19 @@ class RedisInterface:
 
 		value = self.db.get(self.key)
 
-		try:
-			result = self.deserialize(value)
-		except Exception:
-			result = value.decode() if type(value) == bytes else value
+		if type(value) == bytes:
+			value = value.decode()
 		
-		return result
+		if type(value) == str:
+			try:
+				value = int(value)
+			except ValueError:
+				try:
+					value = float(value)
+				except ValueError:
+					pass
+
+		return value
 	
 	def __eq__(self, other):
 
