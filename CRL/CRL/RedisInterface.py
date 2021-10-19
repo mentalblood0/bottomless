@@ -107,14 +107,15 @@ class RedisInterface:
 	
 	def clear(self):
 
-		pattern = f'{self.key}.*' if self.key else '*'
-
-		keys_to_delete = [self.key] + self.db.scan(match=pattern)[1]
+		if self.key:
+			keys_to_delete = [self.key] + self.db.scan(match=f'{self.key}.*')[1]
+		else:
+			keys_to_delete = self.db.scan(match='*')[1]
 
 		if keys_to_delete:
 			if not self.db.delete(*keys_to_delete):
-				pass
 				# raise KeyError(f"No keys starting with '{self.key}'")
+				pass
 
 	def __delitem__(self, key):
 		self[key].clear()
