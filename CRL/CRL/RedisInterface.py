@@ -71,10 +71,15 @@ class RedisInterface:
 
 		if type(value) == dict:
 			for k, v in value.items():
+				if isinstance(v, RedisInterface):
+					v = v()
 				self[k] = v
 		elif type(value) == list:
 			for i in range(len(value)):
-				self[i] = value[i]
+				if isinstance(value[i], RedisInterface):
+					self[i] = value[i]()
+				else:
+					self[i] = value[i]
 		else:
 			self.db.set(self.key, value)
 
@@ -82,6 +87,9 @@ class RedisInterface:
 
 		if type(key) == int:
 			key = str(key)
+
+		if isinstance(value, RedisInterface):
+			value = value()
 
 		if len(self.path):
 			keys = {
@@ -140,8 +148,6 @@ class RedisInterface:
 			other_value = other()
 		else:
 			other_value = other
-		
-		print(f"{json.dumps(self_value, indent=4)}\n{json.dumps(other_value, indent=4)}")
 
 		return self_value == other_value
 	
@@ -157,7 +163,13 @@ class RedisInterface:
 		} or None
 	
 	def __contains__(self, item):
-		return item in self.keys()
+
+		if type(item) == int:
+			item = str(item)
+
+		key = self.compose_key(self.path + [item])
+
+		return self.db.exists(key)
 	
 	def update(self, other: dict):
 		self._set(other)

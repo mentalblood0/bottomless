@@ -1,7 +1,7 @@
 def RedisInterfaceIterator(interface):
 
 	for k in sorted(interface.keys()):
-		yield interface[k]()
+		yield interface[k]
 
 
 
