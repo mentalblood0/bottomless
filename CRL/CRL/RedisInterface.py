@@ -1,4 +1,4 @@
-from . import RedisInterfaceIterator, Lock
+from . import RedisInterfaceIterator
 
 
 
@@ -72,8 +72,6 @@ class RedisInterface:
 		)
 
 	def _set(self, value):
-
-		# self.db.delete(self.key)
 
 		if type(value) == dict:
 			for k, v in value.items():

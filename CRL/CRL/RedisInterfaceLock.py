@@ -4,24 +4,24 @@ from . import RedisInterface
 
 
 
-class Lock:
+class RedisInterfaceLock:
 
 	locks_path = ['_RedisInterface_locks']
 
 	def __init__(self, interface):
-		self.lock_interface = RedisInterface(
-			db=interface.db, 
-			path=self.locks_path + interface.path
-		)
+
+		lock_key = interface.compose_key(self.locks_path + interface.path)
+		self.set = lambda x: interface.db.set(lock_key, x)
+		self.get = lambda: interface.db.get(lock_key)
 
 	def acquire(self):
-		self.lock_interface._set(1)
+		self.set(1)
 	
 	def isAcquired(self):
-		return self.lock_interface()
+		return self.get()
 	
 	def release(self):
-		self.lock_interface._set(0)
+		self.set(0)
 
 	def __enter__(self):
 
@@ -37,4 +37,4 @@ class Lock:
 
 
 import sys
-sys.modules[__name__] = Lock
+sys.modules[__name__] = RedisInterfaceLock
