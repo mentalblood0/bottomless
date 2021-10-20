@@ -4,6 +4,10 @@ from . import RedisInterfaceIterator
 
 
 
+def keys_match(db, pattern):
+	return [k for k in db.scan_iter(match=pattern)]
+
+
 class RedisInterface:
 
 	def __init__(
@@ -38,7 +42,7 @@ class RedisInterface:
 	def keys(self):
 
 		if self.key:
-			absolute_keys = self.db.scan(match=f'{self.key}.*')[1]
+			absolute_keys = keys_match(self.db, f'{self.key}.*')
 		else:
 			absolute_keys = self.db.keys()
 
@@ -63,7 +67,7 @@ class RedisInterface:
 
 	def _set(self, value):
 
-		self.db.delete(self.key)
+		# self.db.delete(self.key)
 
 		if type(value) == dict:
 			for k, v in value.items():
@@ -84,7 +88,7 @@ class RedisInterface:
 				k: True
 				for k in 
 				[self.path[0].encode()] + 
-				self.db.scan(match=f"{self.path[0]}.*")[1]
+				keys_match(self.db, f"{self.path[0]}.*")
 			}
 
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
@@ -93,12 +97,13 @@ class RedisInterface:
 			if key_to_delete in keys:
 				self.db.delete(key_to_delete)
 
+		self[key].clear()
 		self[key]._set(value)
 	
 	def clear(self):
 
 		if self.key:
-			keys_to_delete = [self.key] + self.db.scan(match=f'{self.key}.*')[1]
+			keys_to_delete = [self.key] + keys_match(self.db, f'{self.key}.*')
 		else:
 			keys_to_delete = self.db.keys()
 
