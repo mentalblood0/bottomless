@@ -13,7 +13,7 @@ Features:
 ## Installation
 
 ```bash
-python -m pip install --index-url http://10.8.5.172:8081/simple/ --trusted-host 10.8.5.172 CRL
+python -m pip install CRL
 ```
 
 
