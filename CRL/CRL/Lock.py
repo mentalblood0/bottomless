@@ -15,13 +15,13 @@ class Lock:
 		)
 
 	def acquire(self):
-		self.lock_interface = 1
+		self.lock_interface._set(1)
 	
 	def isAcquired(self):
 		return self.lock_interface()
 	
 	def release(self):
-		self.lock_interface = 0
+		self.lock_interface._set(0)
 
 	def __enter__(self):
 
