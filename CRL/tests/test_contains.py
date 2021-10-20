@@ -1,7 +1,5 @@
-import uuid
 import pytest
 from redis import Redis
-from datetime import datetime
 
 from tests import config
 from CRL import RedisInterface
