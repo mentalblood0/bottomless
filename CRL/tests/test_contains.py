@@ -18,8 +18,12 @@ def test_basic():
 
 	interface |= {
 		'sessions': {
-			1: 'a',
-			'2': 'b'
+			1: {
+				'name': 'one'
+			},
+			'2': {
+				'name': 'two'
+			}
 		}
 	}
 

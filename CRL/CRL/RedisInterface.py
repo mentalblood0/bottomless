@@ -7,6 +7,14 @@ from . import RedisInterfaceIterator
 def keys_match(db, pattern):
 	return [k for k in db.scan_iter(match=pattern)]
 
+def have_subkeys(db, key):
+
+	if db.exists(key):
+		return True
+	
+	for k in db.scan_iter(match=f"{key}.*"):
+		return True
+
 
 class RedisInterface:
 
@@ -169,7 +177,7 @@ class RedisInterface:
 
 		key = self.compose_key(self.path + [item])
 
-		return self.db.exists(key)
+		return have_subkeys(self.db, key)
 	
 	def update(self, other: dict):
 		self._set(other)
