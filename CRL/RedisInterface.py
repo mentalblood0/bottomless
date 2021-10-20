@@ -78,12 +78,14 @@ class RedisInterface:
 				if isinstance(v, RedisInterface):
 					v = v()
 				self[k] = v
+		
 		elif type(value) == list:
 			for i in range(len(value)):
 				if isinstance(value[i], RedisInterface):
 					self[i] = value[i]()
 				else:
 					self[i] = value[i]
+		
 		else:
 			self.db.set(self.key, value)
 

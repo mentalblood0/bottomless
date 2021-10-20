@@ -2,3 +2,5 @@ __pycache__
 dist
 *egg-info*
 config.json
+build.cmd
+build.sh
