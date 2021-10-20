@@ -1,3 +1,5 @@
+import json
+
 from . import RedisInterfaceIterator
 
 
@@ -128,8 +130,13 @@ class RedisInterface:
 	
 	def __eq__(self, other):
 
-		self_value = self._get()
-		other_value = other._get() if hasattr(other, '_get') else other
+		self_value = self()
+		if isinstance(other, RedisInterface):
+			other_value = other()
+		else:
+			other_value = other
+		
+		print(f"{json.dumps(self_value, indent=4)}\n{json.dumps(other_value, indent=4)}")
 
 		return self_value == other_value
 	

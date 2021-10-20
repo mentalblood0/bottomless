@@ -30,6 +30,7 @@ def test_cascade():
 
 	del interface['1']
 
+	assert interface['1']() == None
 	assert interface['1'] == None
 	assert interface['1']['1'] == None
 	assert interface['1']['2'] == None
