@@ -1,4 +1,4 @@
-from . import RedisInterfaceIterator
+from . import RedisInterfaceIterator, Lock
 
 
 
