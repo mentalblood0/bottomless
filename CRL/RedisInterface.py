@@ -71,25 +71,27 @@ class RedisInterface:
 			self.compose_key
 		)
 
-	def _set(self, value):
+	def _set(self, value, pipeline=None):
+
+		db = pipeline or self.db
 
 		if type(value) == dict:
 			for k, v in value.items():
 				if isinstance(v, RedisInterface):
 					v = v()
-				self[k] = v
+				self.__setitem__(k, v, pipeline)
 		
 		elif type(value) == list:
 			for i in range(len(value)):
-				if isinstance(value[i], RedisInterface):
-					self[i] = value[i]()
-				else:
-					self[i] = value[i]
+				v = value[i]
+				if isinstance(v, RedisInterface):
+					v = v()
+				self.__setitem__(i, v, pipeline)
 		
 		else:
-			self.db.set(self.key, value)
+			db.set(self.key, value)
 
-	def __setitem__(self, key, value):
+	def __setitem__(self, key, value, pipeline=None):
 
 		if type(key) == int:
 			key = str(key)
@@ -104,17 +106,24 @@ class RedisInterface:
 				[self.path[0].encode()] + 
 				keys_match(self.db, f"{self.path[0]}.*")
 			}
+		
+		db = pipeline or self.db.pipeline()
 
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
 		for i in range(len(self.path)):
 			key_to_delete = self.compose_key(self.path[:i+1]).encode() # because there byte strings in keys
 			if key_to_delete in keys:
-				self.db.delete(key_to_delete)
+				db.delete(key_to_delete)
 
-		self[key].clear()
-		self[key]._set(value)
+		self[key].clear(db)
+		self[key]._set(value, db)
+
+		if not pipeline:
+			db.execute()
 	
-	def clear(self):
+	def clear(self, pipeline=None):
+
+		db = pipeline or self.db
 
 		if self.key:
 			keys_to_delete = [self.key] + keys_match(self.db, f'{self.key}.*')
@@ -122,9 +131,7 @@ class RedisInterface:
 			keys_to_delete = self.db.keys()
 
 		if keys_to_delete:
-			if not self.db.delete(*keys_to_delete):
-				# raise KeyError(f"No keys starting with '{self.key}'")
-				pass
+			db.delete(*keys_to_delete)
 
 	def __delitem__(self, key):
 		self[key].clear()

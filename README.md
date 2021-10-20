@@ -1,16 +1,17 @@
-# CRL (Correct Redis Library)
+# 👌 CRL (Correct Redis Library)
 
 Library to easily manage data in Redis databases
 
 Features:
 
-* One-class interface
-* No unnecessary data rewriting
-* A lot of sugar
+* 😴 No excess data reading/rewriting
+* ⚛️ Through-keys yet atomic
+* 🧐 One-class interface
+* 🍬 A lot of sugar
 
 
 
-## Installation
+## 💽 Installation
 
 ```bash
 python -m pip install CRL
@@ -18,7 +19,7 @@ python -m pip install CRL
 
 
 
-## Usage
+## ✍️ Usage
 
 Here are just a few examples
 

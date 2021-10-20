@@ -22,10 +22,11 @@ def test_basic():
 		interface[key] = value
 	
 	def long_get(interface, key, valid_key, results):
-		sleep(0.2)
+		sleep(1)
+		print(len(interface), valid_key)
 		results['long_get'] = (interface[key]() == valid_key)
 	
-	n = 10 ** 2
+	n = 4 * 10 ** 2
 	key = 'key'
 	value = {
 		i+1: i+1
