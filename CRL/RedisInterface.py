@@ -77,7 +77,7 @@ class RedisInterface:
 
 		db = pipeline or self.db
 		if not pipeline:
-			self[key].clear(db)
+			self.clear(db)
 
 		if type(value) == dict:
 			for k, v in value.items():

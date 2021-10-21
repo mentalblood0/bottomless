@@ -35,7 +35,7 @@ def test_realistic():
 	interface = RedisInterface(db)
 	interface.clear()
 
-	n = 20 * 2
+	n = 10 ** 2
 	start = time.time()
 
 	cProfile.runctx("""
