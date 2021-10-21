@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
 	setup(
 		name='CRL',
-		version='0.2.5',
+		version='0.2.6',
 		description='Correct Redis Library',
 		long_description=long_description,
 		long_description_content_type='text/markdown',

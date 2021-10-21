@@ -185,7 +185,10 @@ class RedisInterface:
 		return have_subkeys(self.db, key)
 	
 	def update(self, other: dict):
-		self._set(other)
+
+		pipeline = self.db.pipeline()
+		self._set(other, pipeline)
+		pipeline.execute()
 	
 	def __ior__(self, other: dict): # |=
 		self.update(other)
