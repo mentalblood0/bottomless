@@ -7,7 +7,7 @@ if __name__ == '__main__':
 
 	long_description = ''
 	if os.path.exists('README.md'):
-		with open('README.md') as f:
+		with open('README.md', encoding='utf-8') as f:
 			long_description = f.read()
 
 	setup(
