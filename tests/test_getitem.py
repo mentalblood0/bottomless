@@ -13,7 +13,7 @@ def test_empty_key():
 
 	interface = RedisInterface(db)
 
-	with pytest.raises(AssertionError):
+	with pytest.raises(IndexError):
 		interface['']
 
 
@@ -29,5 +29,5 @@ def test_multi_key():
 
 	interface = RedisInterface(db, ['one', 'two', 'three'])
 
-	with pytest.raises(AssertionError):
+	with pytest.raises(IndexError):
 		interface['one.two']

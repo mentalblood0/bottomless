@@ -29,7 +29,8 @@ class RedisInterface:
 		self.check_path = check_path
 		self.compose_key = compose_key
 
-		assert self.check_path(self.path)
+		if not self.check_path(self.path):
+			raise IndexError(f'Invalid path: {self.path}')
 		self._key = self.compose_key(self.path)
 	
 	@property
