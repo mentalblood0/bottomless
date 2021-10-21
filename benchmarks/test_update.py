@@ -1,6 +1,6 @@
 import time
-from typing import overload
 import uuid
+import cProfile
 from redis import Redis
 from datetime import datetime
 
@@ -35,27 +35,28 @@ def test_realistic():
 	interface = RedisInterface(db)
 	interface.clear()
 
-	n = 20 * 5
+	n = 20 * 2
 	start = time.time()
 
-	for i in range(n):
+	cProfile.runctx("""
+for i in range(n):
 
-		while True:
-			id = uuid.uuid4().hex
-			if not id in interface['sessions']:
-				break
-		
-		interface['sessions'][id] = {
-			'id': id,
-			'name': i,
-			'opened': 1,
-			'datetime': str(datetime.now()), 
-			'state': 'new',
-			'commandCount': 0
-		}
+	while True:
+		id = uuid.uuid4().hex
+		if not id in interface['sessions']:
+			break
+	
+	interface['sessions'][id] = {
+		'id': id,
+		'name': i,
+		'opened': 1,
+		'datetime': str(datetime.now()), 
+		'state': 'new',
+		'commandCount': 0
+	}""", locals=locals(), globals = globals())
 	
 	end = time.time()
 
 	overall = end - start
 
-	assert overall < 1 
+	assert overall < 1

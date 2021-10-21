@@ -100,22 +100,13 @@ class RedisInterface:
 
 		if isinstance(value, RedisInterface):
 			value = value()
-
-		if len(self.path):
-			keys = {
-				k: True
-				for k in 
-				[self.path[0].encode()] + 
-				keys_match(self.db, f"{self.path[0]}.*")
-			}
 		
 		db = pipeline or self.db.pipeline()
 
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
 		for i in range(len(self.path)):
 			key_to_delete = self.compose_key(self.path[:i+1]).encode() # because there byte strings in keys
-			if key_to_delete in keys:
-				db.delete(key_to_delete)
+			db.delete(key_to_delete)
 
 		self[key].clear(db)
 		self[key]._set(value, db)
