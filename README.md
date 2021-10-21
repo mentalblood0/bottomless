@@ -28,18 +28,15 @@ Feel free to use the tests as a manual
 ### Preparations
 
 ```python
-from redis import Redis
 from CRL import RedisInterface
 
-db = Redis.from_url("redis://localhost:6379")
-
-interface = RedisInterface(config['db']['url'])
+db = RedisInterface("redis://localhost:6379")
 ```
 
 ### Dictionary-like interface
 
 ```python
-interface.clear()
+db.clear()
 d = {
     '1': {
         '1': {
@@ -49,31 +46,31 @@ d = {
     },
     '2': 'two'
 }
-interface |= d
-assert interface() == d
+db |= d
+assert db() == d
 
-interface['2'] = d
-assert interface['2']() == d
+db['2'] = d
+assert db['2']() == d
 
-interface['1']['1'] = 'lalala'
-assert interface['1']['1'] == 'lalala'
-assert interface['1']['1']['1'] == None
+db['1']['1'] = 'lalala'
+assert db['1']['1'] == 'lalala'
+assert db['1']['1']['1'] == None
 ```
 
 ### List-like interface
 
 ```python
-interface.clear()
+db.clear()
 l = [1, 2, 3]
-interface += [1, 2, 3]
+db += [1, 2, 3]
 
 i = 0
-for e in interface:
+for e in db:
     # e is RedisInterface instance, 
     # so to get data you need to call it:
     assert e() == l[i]
-    assert e() == interface[i]
+    assert e() == db[i]
     i += 1
 
-assert list(interface) == [1, 2, 3]
+assert list(db) == [1, 2, 3]
 ```

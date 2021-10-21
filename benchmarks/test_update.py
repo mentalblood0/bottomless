@@ -1,7 +1,6 @@
 import time
 import uuid
 import cProfile
-from redis import Redis
 from datetime import datetime
 
 from tests import config

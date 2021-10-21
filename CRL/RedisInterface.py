@@ -1,4 +1,3 @@
-import time
 from redis import Redis
 
 from . import RedisInterfaceIterator
