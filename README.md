@@ -33,7 +33,7 @@ from CRL import RedisInterface
 
 db = Redis.from_url("redis://localhost:6379")
 
-interface = RedisInterface(db)
+interface = RedisInterface(config['db']['url'])
 ```
 
 ### Dictionary-like interface
@@ -57,7 +57,7 @@ assert interface['2']() == d
 
 interface['1']['1'] = 'lalala'
 assert interface['1']['1'] == 'lalala'
-interface['1']['1']['1'] # will throw key error
+assert interface['1']['1']['1'] == None
 ```
 
 ### List-like interface
@@ -69,8 +69,10 @@ interface += [1, 2, 3]
 
 i = 0
 for e in interface:
-    assert e == l[i]
-    assert e == interface[i]
+    # e is RedisInterface instance, 
+    # so to get data you need to call it:
+    assert e() == l[i]
+    assert e() == interface[i]
     i += 1
 
 assert list(interface) == [1, 2, 3]
