@@ -4,12 +4,9 @@ from . import RedisInterfaceIterator
 
 
 
-def keys_match(db, pattern):
-	return [k for k in db.scan_iter(match=pattern)]
-
 def have_subkeys(db, key):
 
-	if db.exists(key):
+	if db.get(key) != None:
 		return True
 	
 	for k in db.scan_iter(match=f"{key}.*"):
@@ -50,7 +47,7 @@ class RedisInterface:
 	def keys(self):
 
 		if self.key:
-			absolute_keys = keys_match(self.db, f'{self.key}.*')
+			absolute_keys = self.db.keys(f'{self.key}.*')
 		else:
 			absolute_keys = self.db.keys()
 
@@ -122,7 +119,7 @@ class RedisInterface:
 		db = pipeline or self.db
 
 		if self.key:
-			keys_to_delete = [self.key] + keys_match(self.db, f'{self.key}.*')
+			keys_to_delete = [self.key] + self.db.keys(f'{self.key}.*')
 		else:
 			keys_to_delete = self.db.keys()
 
@@ -168,7 +165,7 @@ class RedisInterface:
 		
 		result = {}
 		if len(self.key):
-			subkeys = keys_match(self.db, f'{self.key}.*')
+			subkeys = self.db.keys(f'{self.key}.*')
 		else:
 			subkeys = self.db.keys()
 		
