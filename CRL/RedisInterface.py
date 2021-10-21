@@ -76,6 +76,8 @@ class RedisInterface:
 	def _set(self, value, pipeline=None):
 
 		db = pipeline or self.db
+		if not pipeline:
+			self[key].clear(db)
 
 		if type(value) == dict:
 			for k, v in value.items():
@@ -102,13 +104,14 @@ class RedisInterface:
 			value = value()
 		
 		db = pipeline or self.db.pipeline()
+		if not pipeline:
+			self[key].clear(db)
 
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
 		for i in range(len(self.path)):
 			key_to_delete = self.compose_key(self.path[:i+1]).encode() # because there byte strings in keys
 			db.delete(key_to_delete)
 
-		self[key].clear(db)
 		self[key]._set(value, db)
 
 		if not pipeline:
