@@ -1,6 +1,6 @@
 # ⚿ bottomless 
 
-Library to seamlessly manage data in Redis databases
+Library for seamless Redis database management
 
 <br/>
 
