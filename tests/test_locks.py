@@ -4,7 +4,7 @@ from redis import Redis
 from threading import Thread
 
 from tests import config
-from CRL import RedisInterface
+from bottomless import RedisInterface
 
 
 

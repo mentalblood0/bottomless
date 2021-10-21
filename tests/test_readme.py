@@ -1,5 +1,5 @@
 from tests import config
-from CRL import RedisInterface
+from bottomless import RedisInterface
 
 
 

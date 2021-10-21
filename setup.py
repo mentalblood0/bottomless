@@ -11,7 +11,7 @@ if __name__ == '__main__':
 			long_description = f.read()
 
 	setup(
-		name='CRL',
+		name='bottomless',
 		version='0.2.11',
 		description='Correct Redis Library',
 		long_description=long_description,
@@ -20,5 +20,5 @@ if __name__ == '__main__':
 		install_requires=[
 			'redis'
 		],
-		packages=['CRL']
+		packages=['bottomless']
 	)

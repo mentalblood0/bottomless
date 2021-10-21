@@ -1,25 +1,25 @@
-# 👌 CRL (Correct Redis Library)
+# ⚿ bottomless 
 
 Library to seamlessly manage data in Redis databases
 
 <br/>
 
-* ⚛️ Based on pass-through keys yet atomic
-* 😴 No excess data reading/rewriting
-* 🩱 One-class interface
-* 🍬 A lot of sugar
+* ⛓️ Based on pass-through keys yet atomic
+* 💤 No excess data reading/rewriting
+* 👁️ One-class interface
+* 🪄 A lot of sugar
 
 <br/>
 
-## 💽 Installation
+## 💿 Installation
 
 ```bash
-python -m pip install CRL
+python -m pip install bottomless
 ```
 
 <br/>
 
-## ✍️ Usage
+## ✒️ Usage
 
 Here are just a few examples
 
@@ -28,7 +28,7 @@ Feel free to use the tests as a manual
 ### Preparations
 
 ```python
-from CRL import RedisInterface
+from bottomless import RedisInterface
 
 db = RedisInterface("redis://localhost:6379") # just like redis.from_url
 ```
@@ -80,20 +80,20 @@ assert list(db) == [1, 2, 3]
 ## 🔬 Testing
 
 ```bash
-git clone https://github.com/MentalBlood/CRL
-cd CRL
+git clone https://github.com/MentalBlood/bottomless
+cd bottomless
 pytest tests
 ```
 
 <br/>
 
-## 🚴 Benchmarking
+## 📈 Benchmarking
 
 Currently benchmarks are organized as tests and have been used for performance enhancements (algorithmic optimizations, requests number decreasing)
 
 ```bash
-git clone https://github.com/MentalBlood/CRL
-cd CRL
+git clone https://github.com/MentalBlood/bottomless
+cd bottomless
 pytest benchmarks
 ```
 
