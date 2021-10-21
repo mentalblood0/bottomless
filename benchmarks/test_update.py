@@ -9,12 +9,9 @@ from CRL import RedisInterface
 
 
 
-db = Redis.from_url(config['db']['url'])
-
-
 def test_simple():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 	
 	start = time.time()
@@ -32,7 +29,7 @@ def test_simple():
 
 def test_realistic():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	n = 10 ** 2

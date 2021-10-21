@@ -1,23 +1,19 @@
 import pytest
-from redis import Redis
 
 from tests import config
 from CRL import RedisInterface
 
 
 
-db = Redis.from_url(config['db']['url'])
-
-
 def test_empty_key():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface['']
 
 
 def test_valid_key():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	one = interface['one']
 
 	assert one.key == 'one'
@@ -25,7 +21,7 @@ def test_valid_key():
 
 def test_multi_key():
 
-	interface = RedisInterface(db)['one']['two']['three']
+	interface = RedisInterface(config['db']['url'])['one']['two']['three']
 
 	with pytest.raises(IndexError):
 		interface['one.two']

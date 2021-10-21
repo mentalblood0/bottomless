@@ -1,6 +1,5 @@
 import uuid
 import pytest
-from redis import Redis
 from datetime import datetime
 
 from tests import config
@@ -8,12 +7,9 @@ from CRL import RedisInterface
 
 
 
-db = Redis.from_url(config['db']['url'])
-
-
 def test_basic():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	interface[1] = 'one'
@@ -29,7 +25,7 @@ def test_basic():
 
 def test_complex():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	interface['1'] = {
@@ -43,7 +39,7 @@ def test_complex():
 
 def test_many_complex():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	sessions = {}

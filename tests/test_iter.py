@@ -1,17 +1,13 @@
 import pytest
-from redis import Redis
 
 from tests import config
 from CRL import RedisInterface
 
 
 
-db = Redis.from_url(config['db']['url'])
-
-
 def test_basic():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	l = [{
@@ -32,7 +28,7 @@ def test_basic():
 
 def test_valid_key():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	sessions = [{
@@ -50,7 +46,7 @@ def test_valid_key():
 
 def test_invalid_key():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	assert list(interface['sessions']) == []

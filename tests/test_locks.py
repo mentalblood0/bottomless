@@ -8,12 +8,9 @@ from CRL import RedisInterface
 
 
 
-db = Redis.from_url(config['db']['url'])
-
-
 def test_basic():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	results = {'long_get': None}

@@ -1,18 +1,8 @@
 import time
+from redis import Redis
 
 from . import RedisInterfaceIterator
 
-
-
-def have_subkeys(db, key):
-
-	if db.get(key) != None:
-		return True
-	
-	# for k in db.scan(match=f"{key}.*", count=1):
-	# 	return True
-	
-	return bool(db.keys(f'{key}.*'))
 
 
 class RedisInterface:
@@ -24,7 +14,7 @@ class RedisInterface:
 		keyToPath=lambda key: key.split('.')
 	):
 		
-		self._db = db
+		self._db = db if isinstance(db, Redis) else Redis.from_url(db)
 		self._key = ''
 		self._path = []
 
@@ -209,7 +199,13 @@ class RedisInterface:
 		return result
 	
 	def __contains__(self, item):
-		return have_subkeys(self.db, self[item].key)
+
+		key = self[item].key
+
+		if self.db.get(key) != None:
+			return True
+		else:
+			return bool(self.db.keys(f'{key}.*'))
 	
 	def update(self, other: dict):
 

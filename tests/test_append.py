@@ -1,17 +1,13 @@
 import pytest
-from redis import Redis
 
 from tests import config
 from CRL import RedisInterface
 
 
 
-db = Redis.from_url(config['db']['url'])
-
-
 def test_append():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	interface['key'] = 'value'

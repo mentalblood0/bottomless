@@ -1,26 +1,21 @@
 import pytest
-from redis import Redis
 
 from tests import config
 from CRL import RedisInterface
 
 
 
-db = Redis.from_url(config['db']['url'])
-
-
 def test_valid_key():
 
-	interface = RedisInterface(db)
-
-	db.set('key', 'value')
+	interface = RedisInterface(config['db']['url'])
+	interface['key'] = 'value'
 
 	del interface['key']
 
 
 def test_cascade():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 
 	interface['1'] = 'one'
 	interface['2'] = 'two'

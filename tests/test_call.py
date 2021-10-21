@@ -1,17 +1,13 @@
 import pytest
-from redis import Redis
 
 from tests import config
 from CRL import RedisInterface
 
 
 
-db = Redis.from_url(config['db']['url'])
-
-
 def test_nonexistent_key():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	assert interface['key'] == None
@@ -20,7 +16,7 @@ def test_nonexistent_key():
 
 def test_deep():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	interface['1'] = 'one'

@@ -7,12 +7,9 @@ from CRL import RedisInterface
 
 
 
-db = Redis.from_url(config['db']['url'])
-
-
 def test_simple():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 	
 	keys_number = 10 ** 3
@@ -34,7 +31,7 @@ def test_simple():
 
 def test_realistic():
 
-	interface = RedisInterface(db)
+	interface = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	commands = interface['commands']
@@ -53,7 +50,7 @@ def test_realistic():
 		'answer_sent': 0
 	} for i in range(1)]
 
-	n = 1000
+	n = 100
 	start = time.time()
 
 	cProfile.runctx("""
