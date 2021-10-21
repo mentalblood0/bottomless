@@ -197,15 +197,18 @@ class RedisInterface:
 	def __len__(self):
 		return len(self.keys())
 	
-	def append(self, other: list):
-
-		initial_length = len(self)
-		
-		for i in range(len(other)):
-			self[initial_length + i] = other[i]
+	def append(self, value):
+		self[len(self)] = value
 	
 	def __iadd__(self, other: list): # +=
-		self.append(other)
+
+		initial_length = len(self)
+
+		self.update({
+			initial_length + i: other[i]
+			for i in range(len(other))
+		})
+
 		return self
 	
 	def __iter__(self):
