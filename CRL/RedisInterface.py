@@ -206,13 +206,7 @@ class RedisInterface:
 		return result or None
 	
 	def __contains__(self, item):
-
-		if type(item) == int:
-			item = str(item)
-
-		key = self.pathToKey(self.path + [item])
-
-		return have_subkeys(self.db, key)
+		return have_subkeys(self.db, self[item].key)
 	
 	def update(self, other: dict):
 
