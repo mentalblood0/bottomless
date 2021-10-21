@@ -180,12 +180,17 @@ class RedisInterface:
 		
 		values = self.db.mget(subkeys)
 
-		flat_result = {
-			subkeys[i]: values[i]
-			for i in range(len(subkeys))
-		}
+		for i in range(len(subkeys)):
 
-		for k in flat_result:
+			k = subkeys[i]
+			v = values[i].decode()
+			try:
+				v = int(v)
+			except ValueError:
+				try:
+					v = float(v)
+				except ValueError:
+					pass
 			
 			path = k.decode().split('.')[len(self.path):]
 			
@@ -194,15 +199,6 @@ class RedisInterface:
 				if not p in r:
 					r[p] = {}
 				r = r[p]
-			
-			v = flat_result[k].decode()
-			try:
-				v = int(v)
-			except ValueError:
-				try:
-					v = float(v)
-				except ValueError:
-					pass
 			
 			r[path[-1]] = v
 		
