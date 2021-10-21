@@ -1,15 +1,15 @@
 # 👌 CRL (Correct Redis Library)
 
-Library to easily manage data in Redis databases
+Library to seamlessly manage data in Redis databases
 
-Features:
+<br/><br/>
 
 * 😴 No excess data reading/rewriting
 * ⚛️ Through-keys yet atomic
-* 🧐 One-class interface
+* 🩱 One-class interface
 * 🍬 A lot of sugar
 
-
+<br/><br/>
 
 ## 💽 Installation
 
@@ -17,7 +17,7 @@ Features:
 python -m pip install CRL
 ```
 
-
+<br/><br/>
 
 ## ✍️ Usage
 
@@ -30,7 +30,7 @@ Feel free to use the tests as a manual
 ```python
 from CRL import RedisInterface
 
-db = RedisInterface("redis://localhost:6379")
+db = RedisInterface("redis://localhost:6379") # just like redis.from_url
 ```
 
 ### Dictionary-like interface
@@ -66,7 +66,7 @@ db += [1, 2, 3]
 
 i = 0
 for e in db:
-    # e is RedisInterface instance, 
+    # e is a RedisInterface instance, 
     # so to get data you need to call it:
     assert e() == l[i]
     assert e() == db[i]
@@ -74,3 +74,26 @@ for e in db:
 
 assert list(db) == [1, 2, 3]
 ```
+
+<br/><br/>
+
+## 🔬 Testing
+
+```bash
+git clone https://github.com/MentalBlood/CRL
+cd CRL
+pytest tests
+```
+
+<br/><br/>
+
+## 🚴 Benchmarking
+
+Currently benchmarks are organized as tests and used for performance enhancements (algorithmic optimizations, requests number decreasing)
+
+```bash
+git clone https://github.com/MentalBlood/CRL
+cd CRL
+pytest benchmarks
+```
+
