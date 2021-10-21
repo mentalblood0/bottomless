@@ -2,14 +2,14 @@
 
 Library to seamlessly manage data in Redis databases
 
-<br/><br/>
+<br/>
 
 * 😴 No excess data reading/rewriting
 * ⚛️ Through-keys yet atomic
 * 🩱 One-class interface
 * 🍬 A lot of sugar
 
-<br/><br/>
+<br/>
 
 ## 💽 Installation
 
@@ -17,7 +17,7 @@ Library to seamlessly manage data in Redis databases
 python -m pip install CRL
 ```
 
-<br/><br/>
+<br/>
 
 ## ✍️ Usage
 
@@ -75,7 +75,7 @@ for e in db:
 assert list(db) == [1, 2, 3]
 ```
 
-<br/><br/>
+<br/>
 
 ## 🔬 Testing
 
@@ -85,7 +85,7 @@ cd CRL
 pytest tests
 ```
 
-<br/><br/>
+<br/>
 
 ## 🚴 Benchmarking
 
