@@ -21,7 +21,7 @@ def test_keys():
 		for i in range(keys_number)
 	}
 
-	n = 4 * 10 ** 2
+	n = 2 * 10 ** 2
 	start = time.time()
 	for i in range(n):
 		interface.keys()

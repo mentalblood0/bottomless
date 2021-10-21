@@ -1,3 +1,5 @@
+import time
+
 from . import RedisInterfaceIterator
 
 
@@ -175,8 +177,15 @@ class RedisInterface:
 			subkeys = keys_match(self.db, f'{self.key}.*')
 		else:
 			subkeys = self.db.keys()
+		
+		values = self.db.mget(subkeys)
 
-		for k in subkeys:
+		flat_result = {
+			subkeys[i]: values[i]
+			for i in range(len(subkeys))
+		}
+
+		for k in flat_result:
 			
 			path = k.decode().split('.')[len(self.path):]
 			
@@ -186,7 +195,7 @@ class RedisInterface:
 					r[p] = {}
 				r = r[p]
 			
-			v = self.db.get(k).decode()
+			v = flat_result[k].decode()
 			try:
 				v = int(v)
 			except ValueError:
