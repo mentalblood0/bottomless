@@ -169,11 +169,35 @@ class RedisInterface:
 		self_value = self._get()
 		if self_value != None:
 			return self_value
+		
+		result = {}
+		if len(self.key):
+			subkeys = keys_match(self.db, f'{self.key}.*')
+		else:
+			subkeys = self.db.keys()
 
-		return {
-			k: self[k]()
-			for k in self.keys()
-		} or None
+		for k in subkeys:
+			
+			path = k.decode().split('.')[len(self.path):]
+			
+			r = result
+			for p in path[:-1]:
+				if not p in r:
+					r[p] = {}
+				r = r[p]
+			
+			v = self.db.get(k).decode()
+			try:
+				v = int(v)
+			except ValueError:
+				try:
+					v = float(v)
+				except ValueError:
+					pass
+			
+			r[path[-1]] = v
+		
+		return result or None
 	
 	def __contains__(self, item):
 
