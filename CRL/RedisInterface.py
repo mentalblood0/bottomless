@@ -179,6 +179,9 @@ class RedisInterface:
 		else:
 			subkeys = self.db.keys()
 		
+		if not subkeys:
+			return None
+		
 		values = self.db.mget(subkeys)
 
 		for i in range(len(subkeys)):
@@ -203,7 +206,7 @@ class RedisInterface:
 			
 			r[path[-1]] = v
 		
-		return result or None
+		return result
 	
 	def __contains__(self, item):
 		return have_subkeys(self.db, self[item].key)
