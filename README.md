@@ -4,8 +4,8 @@ Library to seamlessly manage data in Redis databases
 
 <br/>
 
+* ⚛️ Based on pass-through keys yet atomic
 * 😴 No excess data reading/rewriting
-* ⚛️ Through-keys yet atomic
 * 🩱 One-class interface
 * 🍬 A lot of sugar
 
@@ -89,7 +89,7 @@ pytest tests
 
 ## 🚴 Benchmarking
 
-Currently benchmarks are organized as tests and used for performance enhancements (algorithmic optimizations, requests number decreasing)
+Currently benchmarks are organized as tests and have been used for performance enhancements (algorithmic optimizations, requests number decreasing)
 
 ```bash
 git clone https://github.com/MentalBlood/CRL
