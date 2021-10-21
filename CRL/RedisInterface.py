@@ -9,8 +9,10 @@ def have_subkeys(db, key):
 	if db.get(key) != None:
 		return True
 	
-	for k in db.scan_iter(match=f"{key}.*"):
-		return True
+	# for k in db.scan(match=f"{key}.*", count=1):
+	# 	return True
+	
+	return bool(db.keys(f'{key}.*'))
 
 
 class RedisInterface:

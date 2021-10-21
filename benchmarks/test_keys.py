@@ -1,4 +1,5 @@
 import time
+import cProfile
 from redis import Redis
 
 from tests import config
@@ -21,10 +22,12 @@ def test_keys():
 		for i in range(keys_number)
 	}
 
-	n = 2 * 10 ** 2
+	n = 1 * 10 ** 2
 	start = time.time()
-	for i in range(n):
-		interface.keys()
+	cProfile.runctx("""
+for i in range(n):
+	interface.keys()""", locals=locals(), globals=globals())
+
 	end = time.time()
 
 	overall = end - start
