@@ -18,20 +18,16 @@ class RedisInterface:
 	def __init__(
 		self, 
 		db, 
-		path=[], 
-		check_path=lambda path: not any([(not p) or ('.' in p) for p in path]), 
-		compose_key=lambda p: '.'.join(p)
+		pathToKey=lambda path: '.'.join(path),
+		keyToPath=lambda key: key.split('.')
 	):
 		
 		self._db = db
-		self._path = path
+		self._key = ''
+		self._path = []
 
-		self.check_path = check_path
-		self.compose_key = compose_key
-
-		if not self.check_path(self.path):
-			raise IndexError(f'Invalid path: {self.path}')
-		self._key = self.compose_key(self.path)
+		self.pathToKey = pathToKey
+		self.keyToPath = keyToPath
 	
 	@property
 	def db(self):
@@ -52,7 +48,7 @@ class RedisInterface:
 		else:
 			absolute_keys = self.db.keys()
 
-		absolute_paths = [k.decode().split('.') for k in absolute_keys]
+		absolute_paths = [self.keyToPath(k.decode()) for k in absolute_keys]
 
 		return {
 			p[len(self.path)]
@@ -64,12 +60,23 @@ class RedisInterface:
 		if type(key) == int:
 			key = str(key)
 
-		return RedisInterface(
-			self.db, 
-			self.path + [key],
-			self.check_path,
-			self.compose_key
+		item_path = self.path + [key]
+
+		item_key = self.pathToKey(item_path)
+		valid_item_path = self.keyToPath(item_key)
+		
+		if item_path != valid_item_path:
+			raise IndexError(f'Invalid path: {item_path}, maybe you mean {valid_item_path} ?')
+
+		item = RedisInterface(
+			db=self.db,
+			pathToKey=self.pathToKey,
+			keyToPath=self.keyToPath
 		)
+		item._key = item_key
+		item._path = item_path
+
+		return item
 
 	def _set(self, value, pipeline=None):
 
@@ -107,7 +114,7 @@ class RedisInterface:
 
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
 		for i in range(len(self.path)):
-			key_to_delete = self.compose_key(self.path[:i+1]).encode() # because there byte strings in keys
+			key_to_delete = self.pathToKey(self.path[:i+1]).encode() # because there byte strings in keys
 			db.delete(key_to_delete)
 
 		self[key]._set(value, db)
@@ -184,7 +191,7 @@ class RedisInterface:
 				except ValueError:
 					pass
 			
-			path = k.decode().split('.')[len(self.path):]
+			path = self.keyToPath(k.decode())[len(self.path):]
 			
 			r = result
 			for p in path[:-1]:
@@ -201,7 +208,7 @@ class RedisInterface:
 		if type(item) == int:
 			item = str(item)
 
-		key = self.compose_key(self.path + [item])
+		key = self.pathToKey(self.path + [item])
 
 		return have_subkeys(self.db, key)
 	

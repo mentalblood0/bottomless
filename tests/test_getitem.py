@@ -12,9 +12,7 @@ db = Redis.from_url(config['db']['url'])
 def test_empty_key():
 
 	interface = RedisInterface(db)
-
-	with pytest.raises(IndexError):
-		interface['']
+	interface['']
 
 
 def test_valid_key():
@@ -27,7 +25,7 @@ def test_valid_key():
 
 def test_multi_key():
 
-	interface = RedisInterface(db, ['one', 'two', 'three'])
+	interface = RedisInterface(db)['one']['two']['three']
 
 	with pytest.raises(IndexError):
 		interface['one.two']

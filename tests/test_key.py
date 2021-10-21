@@ -17,13 +17,13 @@ def test_empty_path():
 
 def test_one_element_path():
 
-	interface = RedisInterface(db, ['one'])
+	interface = RedisInterface(db)['one']
 
 	assert interface.key == 'one'
 
 
 def test_several_elements_path():
 
-	interface = RedisInterface(db, ['one', 'two', 'three'])
+	interface = RedisInterface(db)['one']['two']['three']
 
 	assert interface.key == 'one.two.three'
