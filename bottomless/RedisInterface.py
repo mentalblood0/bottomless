@@ -70,11 +70,17 @@ class RedisInterface:
 
 		return item
 
-	def _set(self, value, pipeline=None):
+	def _set(self, value):
 
-		db = pipeline or self.db
-		if not pipeline:
-			self.clear(db)
+		pipeline = self.db.pipeline()
+		
+		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
+		keys_to_delete = [
+			self.pathToKey(self.path[:i+1]).encode() # because there byte strings in keys
+			for i in range(len(self.path))
+		]
+		if keys_to_delete:
+			pipeline.delete(*keys_to_delete)
 		
 		if (type(value) == dict) or (type(value) == list):
 
@@ -82,36 +88,27 @@ class RedisInterface:
 				self.pathToKey(self.path + [str(p) for p in path]): v
 				for path, v in flatten(value, enumerate_types=(list,)).items()
 			}
-			db.mset(pairs_to_set)
+			pipeline.mset(pairs_to_set)
 		
 		else:
-			db.set(self.key, value)
+			self.clear(pipeline)
+			pipeline.set(self.key, value)
+		
+		pipeline.execute()
 
-	def __setitem__(self, key, value, pipeline=None):
+	def __setitem__(self, key, value):
 
 		if type(key) == int:
 			key = str(key)
 
 		if isinstance(value, RedisInterface):
 			value = value()
-		
-		db = pipeline or self.db.pipeline()
-		if not pipeline:
-			self[key].clear(db)
 
-		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
-		for i in range(len(self.path)):
-			key_to_delete = self.pathToKey(self.path[:i+1]).encode() # because there byte strings in keys
-			db.delete(key_to_delete)
-
-		self[key]._set(value, db)
-
-		if not pipeline:
-			db.execute()
+		self[key]._set(value)
 	
 	def clear(self, pipeline=None):
 
-		db = pipeline or self.db
+		db = pipeline or self.db.pipeline()
 
 		if self.key:
 			keys_to_delete = [self.key] + self.db.keys(f'{self.key}.*')
@@ -120,6 +117,9 @@ class RedisInterface:
 
 		if keys_to_delete:
 			db.delete(*keys_to_delete)
+		
+		if not pipeline:
+			db.execute()
 
 	def __delitem__(self, key):
 		self[key].clear()
@@ -199,13 +199,7 @@ class RedisInterface:
 			return bool(self.db.keys(f'{key}.*'))
 	
 	def update(self, other: dict):
-
-		pipeline = self.db.pipeline()
-
-		for k, v in other.items():
-			self.__setitem__(k, v, pipeline)
-		
-		pipeline.execute()
+		self._set(other)
 	
 	def __ior__(self, other: dict): # |=
 		self.update(other)
