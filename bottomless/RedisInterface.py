@@ -128,24 +128,6 @@ class RedisInterface:
 	def __delitem__(self, key):
 		self[key].clear()
 	
-	def _get(self):
-
-		value = self.db.get(self.key)
-
-		if type(value) == bytes:
-			value = value.decode()
-		
-		if type(value) == str:
-			try:
-				value = int(value)
-			except ValueError:
-				try:
-					value = float(value)
-				except ValueError:
-					pass
-
-		return value
-	
 	def __eq__(self, other):
 
 		self_value = self()
@@ -158,8 +140,22 @@ class RedisInterface:
 	
 	def __call__(self):
 
-		self_value = self._get()
+		self_value = self.db.get(self.key)
+
 		if self_value != None:
+
+			if type(self_value) == bytes:
+				self_value = self_value.decode()
+			
+			if type(self_value) == str:
+				try:
+					self_value = int(self_value)
+				except ValueError:
+					try:
+						self_value = float(self_value)
+					except ValueError:
+						pass
+			
 			return self_value
 		
 		result = {}
