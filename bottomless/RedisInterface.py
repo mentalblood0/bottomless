@@ -33,18 +33,17 @@ class RedisInterface:
 	def key(self):
 		return self._key
 	
-	def keys(self):
+	def _absolute_keys(self):
 
 		if self.key:
-			absolute_keys = self.db.keys(f'{self.key}.*')
+			return self.db.keys(f'{self.key}.*')
 		else:
-			absolute_keys = self.db.keys()
-
-		absolute_paths = [self.keyToPath(k.decode()) for k in absolute_keys]
-
+			return self.db.keys()
+	
+	def keys(self):
 		return {
-			p[len(self.path)]
-			for p in absolute_paths
+			self.keyToPath(k.decode())[len(self.path)]
+			for k in self._absolute_keys()
 		}
 	
 	def __getitem__(self, key):
@@ -91,7 +90,9 @@ class RedisInterface:
 			pipeline.mset(pairs_to_set)
 		
 		else:
-			self.clear(pipeline)
+			keys_to_delete = self._absolute_keys()
+			if keys_to_delete:
+				pipeline.delete(*keys_to_delete)
 			pipeline.set(self.key, value)
 		
 		pipeline.execute()
@@ -106,20 +107,11 @@ class RedisInterface:
 
 		self[key]._set(value)
 	
-	def clear(self, pipeline=None):
-
-		db = pipeline or self.db.pipeline()
-
-		if self.key:
-			keys_to_delete = [self.key] + self.db.keys(f'{self.key}.*')
-		else:
-			keys_to_delete = self.db.keys()
-
-		if keys_to_delete:
-			db.delete(*keys_to_delete)
+	def clear(self):
 		
-		if not pipeline:
-			db.execute()
+		keys_to_delete = [self.key] + self._absolute_keys()
+		if keys_to_delete:
+			self.db.delete(*keys_to_delete)
 
 	def __delitem__(self, key):
 		self[key].clear()

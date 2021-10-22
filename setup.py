@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
 	setup(
 		name='bottomless',
-		version='0.2.13',
+		version='0.2.14',
 		description='Correct Redis Library',
 		long_description=long_description,
 		long_description_content_type='text/markdown',
