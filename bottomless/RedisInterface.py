@@ -33,17 +33,18 @@ class RedisInterface:
 	def key(self):
 		return self._key
 	
-	def _absolute_keys(self):
+	def keys(self):
 
 		if self.key:
-			return self.db.keys(f'{self.key}.*')
+			absolute_keys = self.db.keys(f'{self.key}.*')
 		else:
-			return self.db.keys()
-	
-	def keys(self):
+			absolute_keys = self.db.keys()
+
+		absolute_paths = [self.keyToPath(k.decode()) for k in absolute_keys]
+
 		return {
-			self.keyToPath(k.decode())[len(self.path)]
-			for k in self._absolute_keys()
+			p[len(self.path)]
+			for p in absolute_paths
 		}
 	
 	def __getitem__(self, key):
@@ -71,31 +72,28 @@ class RedisInterface:
 
 	def _set(self, value):
 
-		pipeline = self.db.pipeline()
-		
-		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
-		keys_to_delete = [
-			self.pathToKey(self.path[:i+1]).encode() # because there byte strings in keys
-			for i in range(len(self.path))
-		]
-		if keys_to_delete:
-			pipeline.delete(*keys_to_delete)
+		pairs_to_set = {}
+		keys_to_delete = []
 		
 		if (type(value) == dict) or (type(value) == list):
-
 			pairs_to_set = {
 				self.pathToKey(self.path + [str(p) for p in path]): v
 				for path, v in flatten(value, enumerate_types=(list,)).items()
 			}
-			pipeline.mset(pairs_to_set)
 		
 		else:
-			keys_to_delete = self._absolute_keys()
-			if keys_to_delete:
-				pipeline.delete(*keys_to_delete)
-			pipeline.set(self.key, value)
+			keys_to_delete += self.db.keys(f'{self.key}.*') if self.key else self.db.keys()
+			pairs_to_set[self.key] = value
 		
-		pipeline.execute()
+		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
+		keys_to_delete += [
+			self.pathToKey(self.path[:i+1]).encode() # because there byte strings in keys
+			for i in range(len(self.path))
+		]
+		if keys_to_delete:
+			self.db.delete(*keys_to_delete)
+		
+		self.db.mset(pairs_to_set)
 
 	def __setitem__(self, key, value):
 
@@ -108,8 +106,12 @@ class RedisInterface:
 		self[key]._set(value)
 	
 	def clear(self):
-		
-		keys_to_delete = [self.key] + self._absolute_keys()
+
+		if self.key:
+			keys_to_delete = [self.key] + self.db.keys(f'{self.key}.*')
+		else:
+			keys_to_delete = self.db.keys()
+
 		if keys_to_delete:
 			self.db.delete(*keys_to_delete)
 
