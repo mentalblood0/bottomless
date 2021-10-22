@@ -1,4 +1,5 @@
 from redis import Redis
+from flatten_dict import flatten
 
 from . import RedisInterfaceIterator
 
@@ -74,19 +75,14 @@ class RedisInterface:
 		db = pipeline or self.db
 		if not pipeline:
 			self.clear(db)
-
-		if type(value) == dict:
-			for k, v in value.items():
-				if isinstance(v, RedisInterface):
-					v = v()
-				self.__setitem__(k, v, pipeline)
 		
-		elif type(value) == list:
-			for i in range(len(value)):
-				v = value[i]
-				if isinstance(v, RedisInterface):
-					v = v()
-				self.__setitem__(i, v, pipeline)
+		if (type(value) == dict) or (type(value) == list):
+
+			pairs_to_set = {
+				self.pathToKey(self.path + [str(p) for p in path]): v
+				for path, v in flatten(value, enumerate_types=(list,)).items()
+			}
+			db.mset(pairs_to_set)
 		
 		else:
 			db.set(self.key, value)
@@ -205,7 +201,10 @@ class RedisInterface:
 	def update(self, other: dict):
 
 		pipeline = self.db.pipeline()
-		self._set(other, pipeline)
+
+		for k, v in other.items():
+			self.__setitem__(k, v, pipeline)
+		
 		pipeline.execute()
 	
 	def __ior__(self, other: dict): # |=
