@@ -47,6 +47,9 @@ class RedisInterface:
 			for p in absolute_paths
 		}
 	
+	def expire(self, seconds):
+		self.db.expire(self.key, seconds)
+	
 	def __getitem__(self, key):
 
 		if type(key) == int:
