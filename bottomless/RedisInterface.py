@@ -89,10 +89,12 @@ class RedisInterface:
 			pairs_to_set[self.key] = value
 		
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
-		keys_to_delete += [
+		parent_keys = [
 			self.pathToKey(self.path[:i+1]).encode() # because there byte strings in keys
 			for i in range(len(self.path))
 		]
+		keys_to_delete += parent_keys
+		
 		if keys_to_delete:
 			self.db.delete(*keys_to_delete)
 		
