@@ -33,18 +33,16 @@ class RedisInterface:
 	def key(self):
 		return self._key
 	
-	def keys(self):
-
+	def _absolute_keys(self):
 		if self.key:
-			absolute_keys = self.db.keys(f'{self.key}.*')
+			return self.db.keys(f'{self.key}.*')
 		else:
-			absolute_keys = self.db.keys()
-
-		absolute_paths = [self.keyToPath(k.decode()) for k in absolute_keys]
-
+			return self.db.keys()
+	
+	def keys(self):
 		return {
-			p[len(self.path)]
-			for p in absolute_paths
+			self.keyToPath(k.decode())[len(self.path)] 
+			for k in self._absolute_keys()
 		}
 	
 	def expire(self, seconds):
@@ -85,7 +83,7 @@ class RedisInterface:
 			}
 		
 		else:
-			keys_to_delete += self.db.keys(f'{self.key}.*') if self.key else self.db.keys()
+			keys_to_delete += self._absolute_keys()
 			pairs_to_set[self.key] = value
 		
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
@@ -110,11 +108,7 @@ class RedisInterface:
 	
 	def clear(self):
 
-		if self.key:
-			keys_to_delete = [self.key] + self.db.keys(f'{self.key}.*')
-		else:
-			keys_to_delete = self.db.keys()
-
+		keys_to_delete = [self.key] + self._absolute_keys()
 		if keys_to_delete:
 			self.db.delete(*keys_to_delete)
 
@@ -152,10 +146,7 @@ class RedisInterface:
 			return self_value
 		
 		result = {}
-		if len(self.key):
-			subkeys = self.db.keys(f'{self.key}.*')
-		else:
-			subkeys = self.db.keys()
+		subkeys = self._absolute_keys()
 		
 		if not subkeys:
 			return None
