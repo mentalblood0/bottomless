@@ -6,7 +6,7 @@ from bottomless import RedisInterface
 
 
 
-def test_append():
+def test_basic():
 
 	interface = RedisInterface(config['db']['url'])
 	interface.clear()
