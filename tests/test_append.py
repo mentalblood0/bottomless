@@ -16,12 +16,10 @@ def test_append():
 
 	l = 10
 	m = [i for i in range(l)]
-	print(interface())
 	interface += m
-
-	print(interface())
 
 	assert len(interface) == len(m) + initial_length
 
 	for i in range(len(m)):
-		assert interface[i + initial_length] == m[i]
+		print(type(interface[i + initial_length]()), type(m[i]))
+		assert interface[i + initial_length] == str(m[i])

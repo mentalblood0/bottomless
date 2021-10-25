@@ -11,7 +11,7 @@ def test_basic():
 	interface.clear()
 
 	l = [{
-		'key': i
+		'key': str(i)
 	} for i in range(1, 4+1)]
 
 	interface += l
@@ -33,7 +33,7 @@ def test_valid_key():
 
 	sessions = [{
 		f'session {i}': {
-			'name': i,
+			'name': str(i),
 			'data': 'lalala'
 		}
 	} for i in range(5)]

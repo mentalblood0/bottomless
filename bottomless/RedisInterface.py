@@ -94,7 +94,7 @@ class RedisInterface:
 			for i in range(len(self.path))
 		]
 		keys_to_delete += parent_keys
-		
+
 		if keys_to_delete:
 			self.db.delete(*keys_to_delete)
 		
@@ -138,15 +138,6 @@ class RedisInterface:
 			if type(self_value) == bytes:
 				self_value = self_value.decode()
 			
-			if type(self_value) == str:
-				try:
-					self_value = int(self_value)
-				except ValueError:
-					try:
-						self_value = float(self_value)
-					except ValueError:
-						pass
-			
 			return self_value
 		
 		result = {}
@@ -160,14 +151,10 @@ class RedisInterface:
 		for i in range(len(subkeys)):
 
 			k = subkeys[i]
-			v = values[i].decode()
-			try:
-				v = int(v)
-			except ValueError:
-				try:
-					v = float(v)
-				except ValueError:
-					pass
+			v = values[i]
+
+			if type(v) == bytes:
+				v = v.decode()
 			
 			path = self.keyToPath(k.decode())[len(self.path):]
 			

@@ -56,10 +56,10 @@ def test_many_complex():
 		new_session = {
 			'id': id,
 			'name': 'name',
-			'opened': 1,
+			'opened': str(1),
 			'datetime': str(datetime.now()), 
 			'state': 'new',
-			'commandCount': 0
+			'commandCount': str(0)
 		}
 		sessions[id] = new_session
 		interface['sessions'][id] = new_session
