@@ -11,12 +11,26 @@ class RedisInterface:
 		self, 
 		db, 
 		pathToKey=lambda path: '.'.join(path),
-		keyToPath=lambda key: key.split('.')
+		keyToPath=lambda key: key.split('.'),
+		types_prefixes={
+			str: 's',
+			int: 'i',
+			float: 'f',
+			bool: 'b'
+		},
+		default_type=str
 	):
 		
 		self._db = db if isinstance(db, Redis) else Redis.from_url(db)
 		self._key = ''
 		self._path = []
+		self._types_prefixes = types_prefixes
+		self._default_type = default_type
+
+		self._prefixes_types = {
+			value: key
+			for key, value in types_prefixes.items()
+		}
 
 		self.pathToKey = pathToKey
 		self.keyToPath = keyToPath
@@ -33,6 +47,24 @@ class RedisInterface:
 	def key(self):
 		return self._key
 	
+	def _dumpType(self, value):
+
+		t = type(value)
+		t = t if t in self._types_prefixes else self._default_type
+		
+		return f'{self._types_prefixes[t]}{value}'
+	
+	def _parseType(self, s):
+
+		s = self._default_type(s.decode())
+
+		p = s[0]
+		if not p in self._prefixes_types:
+			return s
+
+		t = self._prefixes_types[p]
+		return t(s[1:])
+
 	def _absolute_keys(self):
 		if self.key:
 			return self.db.keys(f'{self.key}.*')
@@ -98,6 +130,9 @@ class RedisInterface:
 		if keys_to_delete:
 			self.db.delete(*keys_to_delete)
 		
+		for k, v in pairs_to_set.items():
+			pairs_to_set[k] = self._dumpType(v)
+		
 		self.db.mset(pairs_to_set)
 
 	def __setitem__(self, key, value):
@@ -134,20 +169,7 @@ class RedisInterface:
 		self_value = self.db.get(self.key)
 
 		if self_value != None:
-
-			if type(self_value) == bytes:
-				self_value = self_value.decode()
-			
-			if type(self_value) == str:
-				try:
-					self_value = int(self_value)
-				except ValueError:
-					try:
-						self_value = float(self_value)
-					except ValueError:
-						pass
-			
-			return self_value
+			return self._parseType(self_value)
 		
 		result = {}
 		subkeys = self._absolute_keys()
@@ -160,14 +182,7 @@ class RedisInterface:
 		for i in range(len(subkeys)):
 
 			k = subkeys[i]
-			v = values[i].decode()
-			try:
-				v = int(v)
-			except ValueError:
-				try:
-					v = float(v)
-				except ValueError:
-					pass
+			v = self._parseType(values[i])
 			
 			path = self.keyToPath(k.decode())[len(self.path):]
 			
