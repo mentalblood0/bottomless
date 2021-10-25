@@ -20,12 +20,13 @@ def test_basic():
 	
 	def long_get(interface, key, valid_key, results):
 		sleep(1)
+		print(len(interface), valid_key)
 		results['long_get'] = (interface[key]() == valid_key)
 	
 	n = 4 * 10 ** 2
 	key = 'key'
 	value = {
-		i+1: str(i+1)
+		i+1: i+1
 		for i in range(n)
 	}
 	
@@ -36,7 +37,7 @@ def test_basic():
 
 	getter = Thread(
 		target=long_get,
-		args=[interface[key], n, str(n), results]
+		args=[interface[key], n, n, results]
 	)
 
 	setter.start()

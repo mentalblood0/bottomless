@@ -33,8 +33,8 @@ def test_list():
 	db = RedisInterface(config['db']['url'])
 
 	db.clear()
-	l = ['1', '2', '3']
-	db += l
+	l = [1, 2, 3]
+	db += [1, 2, 3]
 
 	i = 0
 	for e in db:
@@ -44,4 +44,4 @@ def test_list():
 		assert e() == db[i]
 		i += 1
 
-	assert list(db) == l
+	assert list(db) == [1, 2, 3]
