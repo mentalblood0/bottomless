@@ -46,7 +46,9 @@ class RedisInterface:
 		}
 	
 	def expire(self, seconds):
-		self.db.expire(self.key, seconds)
+
+		for k in [self.key] + self._absolute_keys():
+			self.db.pexpire(k, int(seconds * 1000))
 	
 	def __getitem__(self, key):
 
