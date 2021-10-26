@@ -49,6 +49,9 @@ class RedisInterface:
 	
 	def _dumpType(self, value):
 
+		if type(value) == bytes:
+			value = value.encode()
+
 		t = type(value)
 		t = t if t in self._types_prefixes else self._default_type
 		

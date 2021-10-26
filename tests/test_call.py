@@ -33,3 +33,24 @@ def test_deep():
 		},
 		'2': 'two'
 	}
+
+
+def test_change_depth():
+
+	interface = RedisInterface(config['db']['url'])
+	interface.clear()
+
+	interface['key'] = {
+		'a': 1
+	}
+	interface['key'] = {
+		'a': {
+			'b': 2
+		}
+	}
+
+	assert interface['key']() == {
+		'a': {
+			'b': 2
+		}
+	}
