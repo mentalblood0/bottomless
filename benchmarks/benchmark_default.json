@@ -1,0 +1,17 @@
+{
+    "call::simple": {
+        "keys_number": 1000
+    },
+    "call::realistic": {
+        "commands_number": 1
+    },
+    "keys::simple": {
+        "keys_number": 10000
+    },
+    "update::simple": {
+        "keys_number": 1000
+    },
+    "update::realistic": {
+        "keys_number": 100
+    }
+}
