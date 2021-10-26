@@ -111,7 +111,7 @@ class RedisInterface:
 	def __getitem__(self, key):
 		return self._getitem([key])
 
-	def _set(self, value):
+	def set(self, value):
 
 		pairs_to_set = {}
 		keys_to_delete = []
@@ -154,7 +154,7 @@ class RedisInterface:
 		if isinstance(value, RedisInterface):
 			value = value()
 
-		self[key]._set(value)
+		self[key].set(value)
 	
 	def clear(self):
 
@@ -216,7 +216,7 @@ class RedisInterface:
 			return bool(self.db.keys(f'{key}.*'))
 	
 	def update(self, other: dict):
-		self._set(other)
+		self.set(other)
 	
 	def __ior__(self, other: dict): # |=
 		self.update(other)
