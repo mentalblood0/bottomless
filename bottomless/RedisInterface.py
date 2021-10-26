@@ -1,7 +1,8 @@
+from typing import Type
 from redis import Redis
 from flatten_dict import flatten
 
-from . import RedisInterfaceIterator
+from . import RedisInterfaceIterator, Connection
 
 
 
@@ -22,6 +23,7 @@ class RedisInterface:
 	):
 		
 		self._db = db if isinstance(db, Redis) else Redis.from_url(db)
+		self._connection = Connection(self._db.connection_pool.connection_kwargs)
 		self._key = ''
 		self._path = []
 		self._types_prefixes = types_prefixes
@@ -46,6 +48,10 @@ class RedisInterface:
 	@property
 	def key(self):
 		return self._key
+	
+	@property
+	def connection(self):
+		return self._connection
 	
 	def _dumpType(self, value):
 
@@ -82,12 +88,9 @@ class RedisInterface:
 		for k in [self.key] + self._absolute_keys():
 			self.db.pexpire(k, int(seconds * 1000))
 	
-	def __getitem__(self, key):
+	def _getitem(self, subpath):
 
-		if type(key) == int:
-			key = str(key)
-
-		item_path = self.path + [key]
+		item_path = self.path + [str(p) for p in subpath]
 
 		item_key = self.pathToKey(item_path)
 		valid_item_path = self.keyToPath(item_key)
@@ -104,6 +107,9 @@ class RedisInterface:
 		item._path = item_path
 
 		return item
+	
+	def __getitem__(self, key):
+		return self._getitem([key])
 
 	def _set(self, value):
 
@@ -161,13 +167,12 @@ class RedisInterface:
 	
 	def __eq__(self, other):
 
-		self_value = self()
 		if isinstance(other, RedisInterface):
-			other_value = other()
+			if self.connection == other.connection:
+				return self.key == other.key
+			return self() == other()
 		else:
-			other_value = other
-
-		return self_value == other_value
+			return self() == other
 	
 	def __call__(self):
 
@@ -178,7 +183,6 @@ class RedisInterface:
 		
 		result = {}
 		subkeys = self._absolute_keys()
-		print(subkeys)
 		
 		if not subkeys:
 			return None
@@ -199,8 +203,6 @@ class RedisInterface:
 				r = r[p]
 			
 			r[path[-1]] = v
-
-			print(result)
 		
 		return result
 	
@@ -239,6 +241,13 @@ class RedisInterface:
 	
 	def __iter__(self):
 		return RedisInterfaceIterator(self)
+	
+	def __add__(self, other):
+		
+		if not self.connection == other.connection:
+			raise TypeError(f'Can not add: connections are not equal: {self.connection}, {other.connection}')
+
+		return self._getitem(other.path)
 
 
 
