@@ -49,9 +49,6 @@ class RedisInterface:
 	
 	def _dumpType(self, value):
 
-		if type(value) == bytes:
-			value = value.encode()
-
 		t = type(value)
 		t = t if t in self._types_prefixes else self._default_type
 		
@@ -124,10 +121,11 @@ class RedisInterface:
 			pairs_to_set[self.key] = value
 		
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
-		parent_keys = [
-			self.pathToKey(self.path[:i+1]).encode() # because there byte strings in keys
-			for i in range(len(self.path))
-		]
+		parent_keys = {
+			self.pathToKey(self.keyToPath(key)[:i+1]).encode() # because there byte strings in keys
+			for key in pairs_to_set
+			for i in range(len(self.keyToPath(key)))
+		}
 		keys_to_delete += parent_keys
 		
 		if keys_to_delete:
@@ -176,6 +174,7 @@ class RedisInterface:
 		
 		result = {}
 		subkeys = self._absolute_keys()
+		print(subkeys)
 		
 		if not subkeys:
 			return None
@@ -191,11 +190,13 @@ class RedisInterface:
 			
 			r = result
 			for p in path[:-1]:
-				if (not p in r) or (type(r[p]) != dict):
+				if not p in r:
 					r[p] = {}
 				r = r[p]
 			
 			r[path[-1]] = v
+
+			print(result)
 		
 		return result
 	
