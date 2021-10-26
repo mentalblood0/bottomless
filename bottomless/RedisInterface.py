@@ -127,14 +127,18 @@ class RedisInterface:
 			for i in range(len(self.keyToPath(key)))
 		}
 		keys_to_delete += parent_keys
+
+		pipeline = self.db.pipeline()
 		
 		if keys_to_delete:
-			self.db.delete(*keys_to_delete)
+			pipeline.delete(*keys_to_delete)
 		
 		for k, v in pairs_to_set.items():
 			pairs_to_set[k] = self._dumpType(v)
 		
-		self.db.mset(pairs_to_set)
+		pipeline.mset(pairs_to_set)
+
+		pipeline.execute()
 
 	def __setitem__(self, key, value):
 
