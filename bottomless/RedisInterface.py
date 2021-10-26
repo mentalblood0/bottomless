@@ -191,7 +191,7 @@ class RedisInterface:
 			
 			r = result
 			for p in path[:-1]:
-				if not p in r:
+				if (not p in r) or (type(r[p]) != dict):
 					r[p] = {}
 				r = r[p]
 			
