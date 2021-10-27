@@ -165,7 +165,7 @@ class RedisInterface:
 		}
 		keys_to_delete += parent_keys
 
-		pipeline = self._pipeline or self.db
+		pipeline = self._pipeline or self.db.pipeline()
 		
 		if keys_to_delete:
 			pipeline.delete(*keys_to_delete)
@@ -175,7 +175,7 @@ class RedisInterface:
 		
 		pipeline.mset(pairs_to_set)
 
-		if self._pipeline:
+		if not self._pipeline:
 			pipeline.execute()
 
 	def __setitem__(self, key, value):

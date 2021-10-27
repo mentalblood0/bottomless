@@ -46,3 +46,12 @@ def test_bool():
 	interface['key'] = False
 	assert type(interface['key']()) == bool
 	assert interface['key'] == False
+
+
+def test_None():
+
+	interface = RedisInterface(config['db']['url'])
+	interface.clear()
+
+	assert type(interface()) == type(None)
+	assert interface == None
