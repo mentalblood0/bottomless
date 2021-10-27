@@ -1,6 +1,7 @@
 from typing import Type
 from redis import Redis
 from flatten_dict import flatten
+from redis.client import Pipeline
 
 from . import RedisInterfaceIterator, Connection
 
@@ -151,7 +152,7 @@ class RedisInterface:
 		}
 		keys_to_delete += parent_keys
 
-		pipeline = self.db.pipeline()
+		pipeline = self.db if type(self.db) == Pipeline else self.db.pipeline()
 		
 		if keys_to_delete:
 			pipeline.delete(*keys_to_delete)
@@ -161,7 +162,8 @@ class RedisInterface:
 		
 		pipeline.mset(pairs_to_set)
 
-		pipeline.execute()
+		if type(self.db) != Pipeline:
+			pipeline.execute()
 
 	def __setitem__(self, key, value):
 
