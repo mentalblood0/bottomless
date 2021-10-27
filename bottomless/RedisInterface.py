@@ -53,6 +53,23 @@ class RedisInterface:
 	def connection(self):
 		return self._connection
 	
+	@property
+	def types_prefixes(self):
+		return self._types_prefixes
+	
+	@property
+	def default_type(self):
+		return self._default_type
+	
+	def clone(self):
+		return RedisInterface(
+			db=self.db,
+			pathToKey=self.pathToKey,
+			keyToPath=self.keyToPath,
+			types_prefixes=self.types_prefixes,
+			default_type=self.default_type
+		)
+	
 	def _dumpType(self, value):
 
 		t = type(value)
