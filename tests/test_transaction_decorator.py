@@ -27,7 +27,7 @@ def getTransaction(flag, flag_value, f, args, kwargs):
 		args[0] = piped_self
 
 		if flag != flag_value:
-			flag.set(uuid.uuid4().hex)
+			flag.set(flag_value)
 		
 		pipe.multi()
 		

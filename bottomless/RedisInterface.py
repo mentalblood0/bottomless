@@ -36,6 +36,7 @@ class RedisInterface:
 			value: key
 			for key, value in types_prefixes.items()
 		}
+		self._prefixes_types['b'] = lambda b: b == 'True'
 
 		self.pathToKey = pathToKey
 		self.keyToPath = keyToPath
@@ -65,10 +66,6 @@ class RedisInterface:
 		return self._default_type
 
 	def pipe(self, pipeline=None):
-		
-		if self._pipeline:
-			self.execute()
-		
 		self._pipeline = pipeline or self.db.pipeline()
 	
 	def execute(self):
@@ -90,8 +87,10 @@ class RedisInterface:
 		t = type(value)
 		t = t if t in self._types_prefixes else self._default_type
 		
-		return f'{self._types_prefixes[t]}{value}'
-	
+		result = f'{self._types_prefixes[t]}{value}'
+
+		return result
+
 	def _parseType(self, s):
 
 		s = self._default_type(s.decode())
@@ -133,9 +132,7 @@ class RedisInterface:
 		item = RedisInterface(
 			db=self.db,
 			pathToKey=self.pathToKey,
-			keyToPath=self.keyToPath,
-			types_prefixes=self.types_prefixes,
-			default_type=self.default_type
+			keyToPath=self.keyToPath
 		)
 		item._key = item_key
 		item._path = item_path
@@ -233,7 +230,7 @@ class RedisInterface:
 			
 			r = result
 			for p in path[:-1]:
-				if not p in r:
+				if not p in r or (not type(r[p]) == dict):
 					r[p] = {}
 				r = r[p]
 			
