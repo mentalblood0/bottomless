@@ -12,7 +12,6 @@ def test_transaction():
 
 	def client_side_incr(pipe):
 		current_value = pipe.get('OUR-SEQUENCE-KEY')
-		print(type(pipe))
 		next_value = int(current_value) + 1
 		pipe.multi()
 		pipe.set('OUR-SEQUENCE-KEY', next_value)

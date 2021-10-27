@@ -2,6 +2,7 @@ import uuid
 import pytest
 from loguru import logger
 from functools import partial
+from redis.client import Pipeline
 
 from tests import config
 from bottomless import RedisInterface
@@ -16,7 +17,6 @@ class ClientDbMock:
 def getTransaction(flag, f):
 	
 	def transaction_f(pipe):
-		flag.set(uuid.uuid4().hex)
 		pipe.multi()
 		return f()
 	
@@ -33,11 +33,8 @@ def lock(getInterface):
 
 			self = args[0]
 			flag = self.db['locks'] + getInterface(*args, **kwargs)
+			flag.set(uuid.uuid4().hex)
 			
-			piped_self = ClientDbMock(
-				RedisInterface(args[0].db.db.pipeline())
-			)
-			args[0] = piped_self
 			transaction_f = getTransaction(flag, partial(f, *args, **kwargs))
 
 			result = self.db.db.transaction(transaction_f, flag.key, value_from_callable=True)
