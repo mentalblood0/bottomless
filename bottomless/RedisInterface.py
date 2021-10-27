@@ -12,6 +12,7 @@ class RedisInterface:
 	def __init__(
 		self, 
 		db, 
+		pipeline=None,
 		pathToKey=lambda path: '.'.join(path),
 		keyToPath=lambda key: key.split('.'),
 		types_prefixes={
@@ -24,7 +25,8 @@ class RedisInterface:
 	):
 		
 		self._db = db if isinstance(db, Redis) else Redis.from_url(db)
-		self._connection = Connection(self._db.connection_pool.connection_kwargs)
+		self._connection = Connection(self.db.connection_pool.connection_kwargs)
+		self._pipeline = pipeline
 		self._key = ''
 		self._path = []
 		self._types_prefixes = types_prefixes
@@ -61,6 +63,18 @@ class RedisInterface:
 	@property
 	def default_type(self):
 		return self._default_type
+
+	def pipe(self, pipeline=None):
+		
+		if self._pipeline:
+			self.execute()
+		
+		self._pipeline = pipeline or self.db.pipeline()
+	
+	def execute(self):
+		pipeline = self._pipeline
+		self._pipeline = None
+		pipeline.execute()
 	
 	def clone(self):
 		return RedisInterface(
@@ -119,7 +133,9 @@ class RedisInterface:
 		item = RedisInterface(
 			db=self.db,
 			pathToKey=self.pathToKey,
-			keyToPath=self.keyToPath
+			keyToPath=self.keyToPath,
+			types_prefixes=self.types_prefixes,
+			default_type=self.default_type
 		)
 		item._key = item_key
 		item._path = item_path
@@ -152,7 +168,7 @@ class RedisInterface:
 		}
 		keys_to_delete += parent_keys
 
-		pipeline = self.db if type(self.db) == Pipeline else self.db.pipeline()
+		pipeline = self.db.pipeline()
 		
 		if keys_to_delete:
 			pipeline.delete(*keys_to_delete)
@@ -162,8 +178,10 @@ class RedisInterface:
 		
 		pipeline.mset(pairs_to_set)
 
-		if type(self.db) != Pipeline:
-			pipeline.execute()
+		pipeline.execute()
+
+		# if self._pipeline:
+		# 	pipeline.execute()
 
 	def __setitem__(self, key, value):
 
