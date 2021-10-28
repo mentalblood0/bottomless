@@ -82,7 +82,7 @@ for i,key in ipairs(ARGV) do
 					args[n] = key
 					n = n+1
 				else
-					redis.call(command, table.unpack(args))
+					redis.call(command, unpack(args))
 					command = key
 					N = false
 					n = 1
@@ -95,7 +95,7 @@ for i,key in ipairs(ARGV) do
 	end
 end
 
-redis.call(command, table.unpack(args))
+redis.call(command, unpack(args))
 """)
 
 	def _getByPattern(self, pattern):
@@ -214,16 +214,16 @@ redis.call(command, table.unpack(args))
 			*(['MSET', len(pairs_to_set) * 2, *[e[i] for e in pairs_to_set.items() for i in (0, 1,)]] if pairs_to_set else [])
 		]
 
-		print(args)
+		# print(args)
 
-		self.__set(args)
+		return self.__set(args=args)
 
 	def set(self, value):
 
-		# print('set', self.key, value)
-
 		pairs_to_set = {}
 		keys_to_delete = []
+
+		keys_to_delete_pattern = ''
 		
 		if (type(value) == dict) or (type(value) == list):
 			pairs_to_set = {
@@ -232,6 +232,7 @@ redis.call(command, table.unpack(args))
 			}
 		
 		else:
+			keys_to_delete_pattern = self._subkeys_pattern
 			pairs_to_set[self.key] = value
 		
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
@@ -245,7 +246,7 @@ redis.call(command, table.unpack(args))
 		for k, v in pairs_to_set.items():
 			pairs_to_set[k] = self._dumpType(v)
 		
-		self._set(self._subkeys_pattern, list(parent_keys), pairs_to_set)
+		self._set(keys_to_delete_pattern, list(parent_keys), pairs_to_set)
 
 	def __setitem__(self, key, value):
 
