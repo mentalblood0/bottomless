@@ -216,7 +216,7 @@ redis.call(command, unpack(args))
 
 		return self.__set(args=args)
 
-	def set(self, value):
+	def set(self, value, clear=True):
 
 		pairs_to_set = {}
 		keys_to_delete = []
@@ -224,6 +224,10 @@ redis.call(command, unpack(args))
 		keys_to_delete_pattern = ''
 		
 		if (type(value) == dict) or (type(value) == list):
+			
+			if clear:
+				keys_to_delete_pattern = self._subkeys_pattern
+			
 			pairs_to_set = {
 				self.pathToKey(self.path + [str(p) for p in path]): v
 				for path, v in flatten(value, enumerate_types=(list,)).items()
@@ -314,7 +318,7 @@ redis.call(command, unpack(args))
 			return bool(self.db.keys(f'{key}.*'))
 	
 	def update(self, other: dict):
-		self.set(other)
+		self.set(other, clear=False)
 	
 	def __ior__(self, other: dict): # |=
 		self.update(other)

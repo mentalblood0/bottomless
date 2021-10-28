@@ -15,12 +15,13 @@ def test_basic():
 	interface.clear()
 
 	interface[1] = 'one'
+	assert interface[1] == 'one'
+
 	interface['2'] = 'two'
 	interface['1']['1'] = 'one.one'
 	interface['1']['2'] = 'one.two'
 
-	assert interface['1'] != 'one'
-	print(interface[2](), 'two')
+	assert interface[1] != 'one'
 	assert interface[2] == 'two'
 	assert interface['1']['1'] == 'one.one'
 	assert interface['1']['2'] == 'one.two'
@@ -76,9 +77,14 @@ def test_async():
 	interface.clear()
 
 	types = {
-		bool: False,
+		bool: {
+			'a': False
+		},
 		dict: {
-			'a': 1,
+			'a': {
+				'a': 1,
+				'b': 2
+			},
 			'b': 2
 		}
 	}
@@ -95,11 +101,11 @@ def test_async():
 		
 		return f
 	
-	seconds = 2
+	seconds = 1
 	keys_number = 10
 
 	setters = {
-		str(key): {
+		key: {
 			t: Thread(
 				target=repeat_set(t),
 				args=[interface, key, seconds, report]
@@ -115,7 +121,7 @@ def test_async():
 	while start + seconds > time.time():
 		for key in setters:
 			if key in report:
-				result = interface[key]()
+				result = interface[str(key)]()
 				if not any([result == value for value in types.values()]):
 					for key in setters:
 						for t in setters[key]:
