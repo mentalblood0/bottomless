@@ -214,8 +214,6 @@ redis.call(command, unpack(args))
 			*(['MSET', len(pairs_to_set) * 2, *[e[i] for e in pairs_to_set.items() for i in (0, 1,)]] if pairs_to_set else [])
 		]
 
-		# print(args)
-
 		return self.__set(args=args)
 
 	def set(self, value):

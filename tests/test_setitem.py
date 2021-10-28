@@ -76,92 +76,46 @@ def test_async():
 	interface_2 = RedisInterface(config['db']['url'])
 	interface.clear()
 
+	types = {
+		bool: False,
+		dict: {
+			'a': 1,
+			'b': 2
+		}
+	}
+
 	report = {}
 
-	def repeat_set_bool(interface, key, seconds, report):
-		start = time.time()
-		while start + seconds > time.time():
-			interface[key] = False
-			report['bool'] = True
+	def repeat_set(t):
 	
-	def repeat_set_dict(interface, key, seconds, report):
-		start = time.time()
-		while start + seconds > time.time():
-			interface[key] = {
-				'a': 1,
-				'b': 2
-			}
-			report['dict'] = True
+		def f(interface, key, seconds, report):
+			start = time.time()
+			while start + seconds > time.time():
+				interface[key] = types[t]
+				report[key] = True
+		
+		return f
 	
 	seconds = 2
-	key = 'key'
-	
-	setter_bool = Thread(
-		target=repeat_set_bool,
-		args=[interface, key, seconds, report]
-	)
+	keys_number = 10
 
-	setter_dict = Thread(
-		target=repeat_set_dict,
-		args=[interface_2, key, seconds, report]
-	)
+	setters = {
+		key: {
+			t: Thread(
+				target=repeat_set(t),
+				args=[interface, key, seconds, report]
+			) for t in types
+		} for key in range(keys_number)
+	}
 
-	setter_bool.start()
-	setter_dict.start()
+	for key in setters:
+		for t in setters[key]:
+			setters[key][t].start()
 	
-	while not report:
-		time.sleep(0.1)
 	start = time.time()
 	while start + seconds > time.time():
-		keys, values = interface._getByPattern(interface._subkeys_pattern)
-		assert keys == [b'key'] or sorted(keys) == [b'key.a', b'key.b']
-		# result = interface()['key']
-		# assert result == False or result == {
-		# 	'a': 1,
-		# 	'b': 2
-		# }
-
-
-def test_async_wait():
-
-	interface = RedisInterface(config['db']['url'])
-	interface.clear()
-
-	def repeat_set_bool(interface, key, seconds):
-		start = time.time()
-		while start + seconds > time.time():
-			interface[key] = False
-	
-	def repeat_set_dict(interface, key, seconds):
-		start = time.time()
-		while start + seconds > time.time():
-			interface[key] = {
-				'a': 1,
-				'b': 2
-			}
-	
-	seconds = 2
-	key = 'key'
-	
-	setter_bool = Thread(
-		target=repeat_set_bool,
-		args=[interface, key, seconds]
-	)
-
-	setter_dict = Thread(
-		target=repeat_set_dict,
-		args=[interface, key, seconds]
-	)
-
-	setter_bool.start()
-	setter_dict.start()
-
-	setter_bool.join()
-	setter_dict.join()
-
-	result = interface[key]()
-
-	assert interface[key]() == False or interface[key] == {
-		'a': 1,
-		'b': 2
-	}
+		for key in setters:
+			if key in report:
+				result = interface[key]()
+				print(result, report)
+				assert any([result == value for value in types.values()])
