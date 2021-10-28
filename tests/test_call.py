@@ -43,12 +43,11 @@ def test_change_depth():
 	interface['key'] = {
 		'a': 1
 	}
-	interface['key'] = {
-		'a': {
-			'b': 2
-		}
+	interface['key']['a'] = {
+		'b': 2
 	}
 
+	interface.db.get(interface['key']['a'].key) == None
 	assert interface['key']() == {
 		'a': {
 			'b': 2

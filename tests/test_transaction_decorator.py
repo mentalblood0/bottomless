@@ -65,6 +65,8 @@ class ClientDb:
 	@transaction(lambda self, id: self.db['sessions'][id]['state'])
 	def getSessionState(self, id):
 		return self.db['sessions'][id]['state']()
+	
+	
 
 
 def test_basic():
@@ -78,3 +80,7 @@ def test_basic():
 	db.db['sessions'][id]['state'] = 'new'
 
 	assert db.getSessionState(id) == state
+
+
+def test_async():
+

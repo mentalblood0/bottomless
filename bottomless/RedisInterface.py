@@ -154,7 +154,7 @@ class RedisInterface:
 			}
 		
 		else:
-			keys_to_delete += self._absolute_keys()
+			keys_to_delete += [self.key] + self._absolute_keys()
 			pairs_to_set[self.key] = value
 		
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
