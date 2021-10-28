@@ -118,4 +118,12 @@ def test_async():
 			if key in report:
 				result = interface[key]()
 				print(result, report)
-				assert any([result == value for value in types.values()])
+				if not any([result == value for value in types.values()]):
+					for key in setters:
+						for t in setters[key]:
+							setters[key][t].join()
+					assert False
+	
+	for key in setters:
+		for t in setters[key]:
+			setters[key][t].join()
