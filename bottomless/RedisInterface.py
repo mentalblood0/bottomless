@@ -246,6 +246,8 @@ return value or subkeys[1]
 			
 			if clear:
 				keys_to_delete_pattern = self.subkeys_pattern
+			else:
+				keys_to_delete_pattern = f'{self.subkeys_pattern}.*'
 			
 			pairs_to_set = {
 				self.pathToKey(self.path + [str(p) for p in path]): v

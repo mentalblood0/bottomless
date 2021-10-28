@@ -65,14 +65,20 @@ def test_deep_dict_shallow_update():
 		'a': {
 			'b': 2
 		},
-		'c': 3
+		'c': {
+			'd': 4
+		}
 	}
 	shallow = {
-		'a': 1
+		'a': {
+			'e': 5
+		},
+		'c': 3
 	}
 
 	interface[key] = deep
 	assert interface[key]() == deep
 
 	interface[key] |= shallow
+	print(interface[key]())
 	assert interface[key]() == deep | shallow
