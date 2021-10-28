@@ -1,7 +1,5 @@
-from typing import Type
 from redis import Redis
 from flatten_dict import flatten
-from redis.client import Pipeline
 
 from . import RedisInterfaceIterator, Connection
 
@@ -196,7 +194,9 @@ redis.call(command, unpack(args))
 		item = RedisInterface(
 			db=self.db,
 			pathToKey=self.pathToKey,
-			keyToPath=self.keyToPath
+			keyToPath=self.keyToPath,
+			types_prefixes=self.types_prefixes,
+			default_type=self.default_type
 		)
 		item._key = item_key
 		item._path = item_path

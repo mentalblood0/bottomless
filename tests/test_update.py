@@ -29,3 +29,27 @@ def test_basic():
 		},
 		'2': 'two'
 	}
+
+
+def test_not_dict():
+
+	interface = RedisInterface(config['db']['url'])
+	interface.clear()
+
+	key = 1
+
+	interface[key] = False
+	assert interface[key]() == False
+
+	interface[key] = {
+		'a': 1,
+		'b': 2
+	}
+	assert interface.db.get(interface[key].key) == None
+	assert interface[key]() == {
+		'a': 1,
+		'b': 2
+	}
+
+	interface[key] = False
+	assert interface[key]() == False

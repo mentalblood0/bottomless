@@ -79,10 +79,7 @@ def test_async():
 	types = {
 		bool: False,
 		dict: {
-			'a': {
-				'a': 1,
-				'b': 2
-			},
+			'a': 1,
 			'b': 2
 		}
 	}
@@ -119,7 +116,8 @@ def test_async():
 	while start + seconds > time.time():
 		for key in setters:
 			if key in report:
-				result = interface[str(key)]()
+				result = interface[key]()
+				print(key, result)
 				if not any([result == value for value in types.values()]):
 					for key in setters:
 						for t in setters[key]:
