@@ -73,7 +73,6 @@ def test_many_complex():
 def test_async():
 
 	interface = RedisInterface(config['db']['url'])
-	interface_2 = RedisInterface(config['db']['url'])
 	interface.clear()
 
 	types = {
@@ -92,7 +91,7 @@ def test_async():
 			start = time.time()
 			while start + seconds > time.time():
 				interface[key] = types[t]
-				report[key] = True
+				report[key] = types[t]
 		
 		return f
 	
@@ -100,7 +99,7 @@ def test_async():
 	keys_number = 10
 
 	setters = {
-		key: {
+		str(key): {
 			t: Thread(
 				target=repeat_set(t),
 				args=[interface, key, seconds, report]
@@ -117,7 +116,6 @@ def test_async():
 		for key in setters:
 			if key in report:
 				result = interface[key]()
-				print(result, report)
 				if not any([result == value for value in types.values()]):
 					for key in setters:
 						for t in setters[key]:
