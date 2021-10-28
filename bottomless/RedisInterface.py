@@ -36,8 +36,8 @@ class RedisInterface:
 		}
 		self.__prefixes_types['b'] = lambda b: b == 'True'
 
-		self.pathToKey = pathToKey
-		self.keyToPath = keyToPath
+		self.__pathToKey = pathToKey
+		self.__keyToPath = keyToPath
 
 		self.__getByPattern = self.db.register_script("""
 local keys = (redis.call('keys', ARGV[1]))
@@ -127,8 +127,20 @@ return value or subkeys[1]
 		return self.__types_prefixes
 	
 	@property
+	def prefixes_types(self):
+		return self.__prefixes_types
+	
+	@property
 	def default_type(self):
 		return self.__default_type
+	
+	@property
+	def pathToKey(self):
+		return self.__pathToKey
+	
+	@property
+	def keyToPath(self):
+		return self.__keyToPath
 
 	def pipe(self, pipeline=None):
 		self.__pipeline = pipeline or self.db.pipeline()

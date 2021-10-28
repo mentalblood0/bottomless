@@ -32,7 +32,7 @@ def test_complex():
 	}
 	interface['key'].expire(0.1)
 
-	sleep(0.1)
+	sleep(0.3)
 
 	assert interface['key']() == None
 
