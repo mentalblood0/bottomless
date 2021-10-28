@@ -53,3 +53,26 @@ def test_not_dict():
 
 	interface[key] = False
 	assert interface[key]() == False
+
+
+def test_deep_dict_shallow_update():
+
+	interface = RedisInterface(config['db']['url'])
+	interface.clear()
+
+	key = 'key'
+	deep = {
+		'a': {
+			'b': 2
+		},
+		'c': 3
+	}
+	shallow = {
+		'a': 1
+	}
+
+	interface[key] = deep
+	assert interface[key]() == deep
+
+	interface[key] |= shallow
+	assert interface[key]() == deep | shallow
