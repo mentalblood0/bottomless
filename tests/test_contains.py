@@ -21,6 +21,8 @@ def test_basic():
 		}
 	}
 
+	assert 'name' in interface['sessions'][1]
+
 	assert 1 in interface['sessions']
 	assert '1' in interface['sessions']
 	

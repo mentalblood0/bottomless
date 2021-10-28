@@ -96,6 +96,13 @@ end
 redis.call(command, unpack(args))
 """)
 
+		self.__contains = self.db.register_script("""
+local value = redis.call('GET', ARGV[1])
+local subkeys = (redis.call('KEYS', ARGV[1] .. '.*'))
+
+return value or subkeys[1]
+""")
+
 	def _getByPattern(self, pattern):
 		return self.__getByPattern(args=[pattern])
 	
@@ -308,14 +315,14 @@ redis.call(command, unpack(args))
 		
 		return result
 	
+	def _contains(self, key):
+		return self.__contains(args=[key])
+	
 	def __contains__(self, item):
 
 		key = self[item].key
 
-		if self.db.get(key) != None:
-			return True
-		else:
-			return bool(self.db.keys(f'{key}.*'))
+		return self._contains(key)
 	
 	def update(self, other: dict):
 		self.set(other, clear=False)
