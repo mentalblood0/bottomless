@@ -268,10 +268,10 @@ return value or subkeys[1]
 		self[key].set(value)
 	
 	def clear(self):
-
-		keys_to_delete = [self.key] + self._absolute_keys()
-		if keys_to_delete:
-			self.db.delete(*keys_to_delete)
+		if self.key == '':
+			self.db.flushdb()
+		else:
+			self._set(self._subkeys_pattern, [self.key], {})
 
 	def __delitem__(self, key):
 		self[key].clear()
