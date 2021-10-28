@@ -46,9 +46,9 @@ local keys = (redis.call('keys', ARGV[1]))
 local values={}
 
 for i,key in ipairs(keys) do 
-    local val = redis.call('GET', key)
-    values[i]=val
-    i=i+1
+	local val = redis.call('GET', key)
+	values[i]=val
+	i=i+1
 end
 
 local result = {}
@@ -56,6 +56,46 @@ result[1] = keys
 result[2] = values
 
 return result
+""")
+
+		self.__set = self.db.register_script("""
+local keys = (redis.call('keys', ARGV[1]))
+local values={}
+
+for i,key in ipairs(keys) do 
+	redis.call('DEL', key)
+	i=i+1
+end
+
+local command = false
+local N = false
+local n = 1
+local args = {}
+
+for i,key in ipairs(ARGV) do
+	if i ~= 1 then
+		if command then
+			if N == false then
+				N = tonumber(key)+1
+			else
+				if n ~= N then
+					args[n] = key
+					n = n+1
+				else
+					redis.call(command, table.unpack(args))
+					command = key
+					N = false
+					n = 1
+					args = {}
+				end
+			end
+		else
+			command = key
+		end
+	end
+end
+
+redis.call(command, table.unpack(args))
 """)
 
 	def _getByPattern(self, pattern):
@@ -165,6 +205,18 @@ return result
 	
 	def __getitem__(self, key):
 		return self._getitem([key])
+	
+	def _set(self, keys_to_delete_pattern, extra_keys_to_delete, pairs_to_set):
+
+		args = [
+			keys_to_delete_pattern, 
+			*(['DEL', len(extra_keys_to_delete), *extra_keys_to_delete] if extra_keys_to_delete else []), 
+			*(['MSET', len(pairs_to_set) * 2, *[e[i] for e in pairs_to_set.items() for i in (0, 1,)]] if pairs_to_set else [])
+		]
+
+		print(args)
+
+		self.__set(args)
 
 	def set(self, value):
 
@@ -180,31 +232,20 @@ return result
 			}
 		
 		else:
-			keys_to_delete += [self.key] + self._absolute_keys()
 			pairs_to_set[self.key] = value
 		
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
 		parent_keys = {
-			self.pathToKey(self.keyToPath(key)[:i+1]).encode() # because there byte strings in keys
+			self.pathToKey(self.keyToPath(key)[:i+1])
 			for key in pairs_to_set
 			for i in range(len(self.keyToPath(key)))
 		}
 		keys_to_delete += parent_keys
 
-		pipeline = self._pipeline or self.db.pipeline()
-		
-		if keys_to_delete:
-			pipeline.delete(*keys_to_delete)
-		
 		for k, v in pairs_to_set.items():
 			pairs_to_set[k] = self._dumpType(v)
 		
-		pipeline.mset(pairs_to_set)
-
-		if not self._pipeline:
-			pipeline.execute()
-		
-		# print('set', self.key, value, 'ok')
+		self._set(self._subkeys_pattern, list(parent_keys), pairs_to_set)
 
 	def __setitem__(self, key, value):
 

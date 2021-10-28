@@ -109,6 +109,8 @@ def test_async():
 	setter_bool.start()
 	setter_dict.start()
 	
+	while not report:
+		time.sleep(0.1)
 	start = time.time()
 	while start + seconds > time.time():
 		keys, values = interface._getByPattern(interface._subkeys_pattern)
