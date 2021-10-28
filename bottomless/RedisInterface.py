@@ -40,6 +40,26 @@ class RedisInterface:
 
 		self.pathToKey = pathToKey
 		self.keyToPath = keyToPath
+
+		self.__getByPattern = self.db.register_script("""
+local keys = (redis.call('keys', ARGV[1]))
+local values={}
+
+for i,key in ipairs(keys) do 
+    local val = redis.call('GET', key)
+    values[i]=val
+    i=i+1
+end
+
+local result = {}
+result[1] = keys
+result[2] = values
+
+return result
+""")
+
+	def _getByPattern(self, pattern):
+		return self.__getByPattern(args=[pattern])
 	
 	@property
 	def db(self):
@@ -101,12 +121,16 @@ class RedisInterface:
 
 		t = self._prefixes_types[p]
 		return t(s[1:])
+	
+	@property
+	def subkeys_pattern(self):
+		if self.key:
+			return f'{self.key}.*'
+		else:
+			return '*'
 
 	def _absolute_keys(self):
-		if self.key:
-			return self.db.keys(f'{self.key}.*')
-		else:
-			return self.db.keys()
+		return self.db.keys(self.subkeys_pattern)
 	
 	def keys(self):
 		return {
@@ -214,12 +238,10 @@ class RedisInterface:
 			return self._parseType(self_value)
 		
 		result = {}
-		subkeys = self._absolute_keys()
+		subkeys, values = self._getByPattern(self.subkeys_pattern)
 		
 		if not subkeys:
 			return None
-		
-		values = self.db.mget(subkeys)
 
 		for i in range(len(subkeys)):
 

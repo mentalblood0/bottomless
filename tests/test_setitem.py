@@ -72,9 +72,8 @@ def test_many_complex():
 
 def test_async():
 
-	interface_1 = RedisInterface(config['db']['url'])
-	interface_2 = RedisInterface(config['db']['url'])
-	interface_1.clear()
+	interface = RedisInterface(config['db']['url'])
+	interface.clear()
 
 	def repeat_set_bool(interface, key, seconds):
 		start = time.time()
@@ -94,18 +93,66 @@ def test_async():
 	
 	setter_bool = Thread(
 		target=repeat_set_bool,
-		args=[interface_1, key, seconds]
+		args=[interface, key, seconds]
 	)
 
 	setter_dict = Thread(
 		target=repeat_set_dict,
-		args=[interface_2, key, seconds]
+		args=[interface, key, seconds]
+	)
+
+	setter_bool.start()
+	setter_dict.start()
+	
+	time.sleep(0.5)
+	result = interface[key]()
+
+	assert result == False or result == {
+		'a': 1,
+		'b': 2
+	}
+
+
+def test_async_wait():
+
+	interface = RedisInterface(config['db']['url'])
+	interface.clear()
+
+	def repeat_set_bool(interface, key, seconds):
+		start = time.time()
+		while start + seconds > time.time():
+			interface[key] = False
+	
+	def repeat_set_dict(interface, key, seconds):
+		start = time.time()
+		while start + seconds > time.time():
+			interface[key] = {
+				'a': 1,
+				'b': 2
+			}
+	
+	seconds = 2
+	key = 'key'
+	
+	setter_bool = Thread(
+		target=repeat_set_bool,
+		args=[interface, key, seconds]
+	)
+
+	setter_dict = Thread(
+		target=repeat_set_dict,
+		args=[interface, key, seconds]
 	)
 
 	setter_bool.start()
 	setter_dict.start()
 
-	assert interface_1[key] == False or interface_1[key] == {
+	setter_bool.join()
+	setter_dict.join()
+
+	result = interface[key]()
+
+	assert interface[key]() == False or interface[key] == {
 		'a': 1,
 		'b': 2
 	}
