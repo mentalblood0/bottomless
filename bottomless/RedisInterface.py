@@ -1,7 +1,7 @@
 from redis import Redis
 from flatten_dict import flatten
 
-from . import RedisInterfaceIterator, Connection
+from . import Connection
 
 
 
@@ -22,19 +22,19 @@ class RedisInterface:
 		default_type=str
 	):
 		
-		self._db = db if isinstance(db, Redis) else Redis.from_url(db)
-		self._connection = Connection(self.db.connection_pool.connection_kwargs)
-		self._pipeline = pipeline
-		self._key = ''
-		self._path = []
-		self._types_prefixes = types_prefixes
-		self._default_type = default_type
+		self.__db = db if isinstance(db, Redis) else Redis.from_url(db)
+		self.__connection = Connection(self.db.connection_pool.connection_kwargs)
+		self.__pipeline = pipeline
+		self.__key = ''
+		self.__path = []
+		self.__types_prefixes = types_prefixes
+		self.__default_type = default_type
 
-		self._prefixes_types = {
+		self.__prefixes_types = {
 			value: key
 			for key, value in types_prefixes.items()
 		}
-		self._prefixes_types['b'] = lambda b: b == 'True'
+		self.__prefixes_types['b'] = lambda b: b == 'True'
 
 		self.pathToKey = pathToKey
 		self.keyToPath = keyToPath
@@ -108,34 +108,34 @@ return value or subkeys[1]
 	
 	@property
 	def db(self):
-		return self._db
+		return self.__db
 	
 	@property
 	def path(self):
-		return self._path
+		return self.__path
 	
 	@property
 	def key(self):
-		return self._key
+		return self.__key
 	
 	@property
 	def connection(self):
-		return self._connection
+		return self.__connection
 	
 	@property
 	def types_prefixes(self):
-		return self._types_prefixes
+		return self.__types_prefixes
 	
 	@property
 	def default_type(self):
-		return self._default_type
+		return self.__default_type
 
 	def pipe(self, pipeline=None):
-		self._pipeline = pipeline or self.db.pipeline()
+		self.__pipeline = pipeline or self.db.pipeline()
 	
 	def execute(self):
-		pipeline = self._pipeline
-		self._pipeline = None
+		pipeline = self.__pipeline
+		self.__pipeline = None
 		pipeline.execute()
 	
 	def clone(self):
@@ -150,21 +150,21 @@ return value or subkeys[1]
 	def _dumpType(self, value):
 
 		t = type(value)
-		t = t if t in self._types_prefixes else self._default_type
+		t = t if t in self.__types_prefixes else self.__default_type
 		
-		result = f'{self._types_prefixes[t]}{value}'
+		result = f'{self.__types_prefixes[t]}{value}'
 
 		return result
 
-	def _parseType(self, s):
+	def __parseType(self, s):
 
-		s = self._default_type(s.decode())
+		s = self.__default_type(s.decode())
 
 		p = s[0]
-		if not p in self._prefixes_types:
+		if not p in self.__prefixes_types:
 			return s
 
-		t = self._prefixes_types[p]
+		t = self.__prefixes_types[p]
 		return t(s[1:])
 	
 	@property
@@ -174,21 +174,21 @@ return value or subkeys[1]
 		else:
 			return '*'
 
-	def _absolute_keys(self):
+	def __absolute_keys(self):
 		return self.db.keys(self._subkeys_pattern)
 	
 	def keys(self):
 		return {
 			self.keyToPath(k.decode())[len(self.path)] 
-			for k in self._absolute_keys()
+			for k in self.__absolute_keys()
 		}
 	
 	def expire(self, seconds):
 
-		for k in [self.key] + self._absolute_keys():
+		for k in [self.key] + self.__absolute_keys():
 			self.db.pexpire(k, int(seconds * 1000))
 	
-	def _getitem(self, subpath):
+	def __getitem(self, subpath):
 
 		item_path = self.path + [str(p) for p in subpath]
 
@@ -205,13 +205,13 @@ return value or subkeys[1]
 			types_prefixes=self.types_prefixes,
 			default_type=self.default_type
 		)
-		item._key = item_key
-		item._path = item_path
+		item.__key = item_key
+		item.__path = item_path
 
 		return item
 	
 	def __getitem__(self, key):
-		return self._getitem([key])
+		return self.__getitem([key])
 	
 	def _set(self, keys_to_delete_pattern, extra_keys_to_delete, pairs_to_set):
 
@@ -290,18 +290,15 @@ return value or subkeys[1]
 		self_value = self.db.get(self.key)
 
 		if self_value != None:
-			return self._parseType(self_value)
+			return self.__parseType(self_value)
 		
 		result = {}
 		subkeys, values = self._getByPattern(self._subkeys_pattern)
-		
-		if not subkeys:
-			return None
 
 		for i in range(len(subkeys)):
 
 			k = subkeys[i]
-			v = self._parseType(values[i])
+			v = self.__parseType(values[i])
 			
 			path = self.keyToPath(k.decode())[len(self.path):]
 			
@@ -313,16 +310,13 @@ return value or subkeys[1]
 			
 			r[path[-1]] = v
 		
-		return result
+		return result or None
 	
 	def _contains(self, key):
 		return self.__contains(args=[key])
 	
-	def __contains__(self, item):
-
-		key = self[item].key
-
-		return self._contains(key)
+	def __contains__(self, key):
+		return self._contains(self[key].key)
 	
 	def update(self, other: dict):
 		self.set(other, clear=False)
@@ -349,14 +343,15 @@ return value or subkeys[1]
 		return self
 	
 	def __iter__(self):
-		return RedisInterfaceIterator(self)
+		for k in sorted(self.keys()):
+			yield self[k]
 	
 	def __add__(self, other):
 		
 		if not self.connection == other.connection:
 			raise TypeError(f'Can not add: connections are not equal: {self.connection}, {other.connection}')
 
-		return self._getitem(other.path)
+		return self.__getitem(other.path)
 
 
 
