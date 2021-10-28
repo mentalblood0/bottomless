@@ -77,9 +77,7 @@ def test_async():
 	interface.clear()
 
 	types = {
-		bool: {
-			'a': False
-		},
+		bool: False,
 		dict: {
 			'a': {
 				'a': 1,
