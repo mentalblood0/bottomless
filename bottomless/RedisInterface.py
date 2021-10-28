@@ -159,7 +159,7 @@ return value or subkeys[1]
 			default_type=self.default_type
 		)
 	
-	def _dumpType(self, value):
+	def __dumpType(self, value):
 
 		t = type(value)
 		t = t if t in self.__types_prefixes else self.__default_type
@@ -180,14 +180,14 @@ return value or subkeys[1]
 		return t(s[1:])
 	
 	@property
-	def _subkeys_pattern(self):
+	def subkeys_pattern(self):
 		if self.key:
 			return f'{self.key}.*'
 		else:
 			return '*'
 
 	def __absolute_keys(self):
-		return self.db.keys(self._subkeys_pattern)
+		return self.db.keys(self.subkeys_pattern)
 	
 	def keys(self):
 		return {
@@ -245,7 +245,7 @@ return value or subkeys[1]
 		if (type(value) == dict) or (type(value) == list):
 			
 			if clear:
-				keys_to_delete_pattern = self._subkeys_pattern
+				keys_to_delete_pattern = self.subkeys_pattern
 			
 			pairs_to_set = {
 				self.pathToKey(self.path + [str(p) for p in path]): v
@@ -253,7 +253,7 @@ return value or subkeys[1]
 			}
 		
 		else:
-			keys_to_delete_pattern = self._subkeys_pattern
+			keys_to_delete_pattern = self.subkeys_pattern
 			pairs_to_set[self.key] = value
 		
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
@@ -265,7 +265,7 @@ return value or subkeys[1]
 		keys_to_delete += parent_keys
 
 		for k, v in pairs_to_set.items():
-			pairs_to_set[k] = self._dumpType(v)
+			pairs_to_set[k] = self.__dumpType(v)
 		
 		self._set(keys_to_delete_pattern, list(parent_keys), pairs_to_set)
 
@@ -283,7 +283,7 @@ return value or subkeys[1]
 		if self.key == '':
 			self.db.flushdb()
 		else:
-			self._set(self._subkeys_pattern, [self.key], {})
+			self._set(self.subkeys_pattern, [self.key], {})
 
 	def __delitem__(self, key):
 		self[key].clear()
@@ -305,7 +305,7 @@ return value or subkeys[1]
 			return self.__parseType(self_value)
 		
 		result = {}
-		subkeys, values = self._getByPattern(self._subkeys_pattern)
+		subkeys, values = self._getByPattern(self.subkeys_pattern)
 
 		for i in range(len(subkeys)):
 
