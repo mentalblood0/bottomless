@@ -123,14 +123,14 @@ return result
 		return t(s[1:])
 	
 	@property
-	def subkeys_pattern(self):
+	def _subkeys_pattern(self):
 		if self.key:
 			return f'{self.key}.*'
 		else:
 			return '*'
 
 	def _absolute_keys(self):
-		return self.db.keys(self.subkeys_pattern)
+		return self.db.keys(self._subkeys_pattern)
 	
 	def keys(self):
 		return {
@@ -168,6 +168,8 @@ return result
 
 	def set(self, value):
 
+		# print('set', self.key, value)
+
 		pairs_to_set = {}
 		keys_to_delete = []
 		
@@ -201,6 +203,8 @@ return result
 
 		if not self._pipeline:
 			pipeline.execute()
+		
+		# print('set', self.key, value, 'ok')
 
 	def __setitem__(self, key, value):
 
@@ -238,7 +242,7 @@ return result
 			return self._parseType(self_value)
 		
 		result = {}
-		subkeys, values = self._getByPattern(self.subkeys_pattern)
+		subkeys, values = self._getByPattern(self._subkeys_pattern)
 		
 		if not subkeys:
 			return None

@@ -73,44 +73,51 @@ def test_many_complex():
 def test_async():
 
 	interface = RedisInterface(config['db']['url'])
+	interface_2 = RedisInterface(config['db']['url'])
 	interface.clear()
 
-	def repeat_set_bool(interface, key, seconds):
+	report = {}
+
+	def repeat_set_bool(interface, key, seconds, report):
 		start = time.time()
 		while start + seconds > time.time():
 			interface[key] = False
+			report['bool'] = True
 	
-	def repeat_set_dict(interface, key, seconds):
+	def repeat_set_dict(interface, key, seconds, report):
 		start = time.time()
 		while start + seconds > time.time():
 			interface[key] = {
 				'a': 1,
 				'b': 2
 			}
+			report['dict'] = True
 	
 	seconds = 2
 	key = 'key'
 	
 	setter_bool = Thread(
 		target=repeat_set_bool,
-		args=[interface, key, seconds]
+		args=[interface, key, seconds, report]
 	)
 
 	setter_dict = Thread(
 		target=repeat_set_dict,
-		args=[interface, key, seconds]
+		args=[interface_2, key, seconds, report]
 	)
 
 	setter_bool.start()
 	setter_dict.start()
 	
-	time.sleep(0.5)
-	result = interface[key]()
-
-	assert result == False or result == {
-		'a': 1,
-		'b': 2
-	}
+	start = time.time()
+	while start + seconds > time.time():
+		keys, values = interface._getByPattern(interface._subkeys_pattern)
+		assert keys == [b'key'] or sorted(keys) == [b'key.a', b'key.b']
+		# result = interface()['key']
+		# assert result == False or result == {
+		# 	'a': 1,
+		# 	'b': 2
+		# }
 
 
 def test_async_wait():
