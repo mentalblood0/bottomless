@@ -67,6 +67,9 @@ def test_deep_dict_shallow_update():
 		},
 		'c': {
 			'd': 4
+		},
+		'f': {
+			'g': 7
 		}
 	}
 	shallow = {
