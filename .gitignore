@@ -4,3 +4,4 @@ dist
 config.json
 build.cmd
 build.sh
+config.json

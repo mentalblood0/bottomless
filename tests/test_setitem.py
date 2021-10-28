@@ -92,12 +92,12 @@ def test_async():
 			start = time.time()
 			while start + seconds > time.time():
 				interface[key] = types[t]
-				report[key] = types[t]
+				report[str(key)] = types[t]
 		
 		return f
 	
-	seconds = 1
-	keys_number = 10
+	seconds = 0.1
+	keys_number = 1
 
 	setters = {
 		key: {
