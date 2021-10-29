@@ -257,7 +257,7 @@ class RedisInterface:
 		return result or None
 	
 	def __contains__(self, key):
-		return self.__scripts['contains'](self[key].key)
+		return self.__scripts['exists'](self[key].key)
 	
 	def update(self, other: dict):
 		self.set(other, clear=False)

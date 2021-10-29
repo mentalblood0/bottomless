@@ -1,3 +1,15 @@
+-- set(
+-- 	keys_to_delete_patterns_number, 
+-- 	*keys_to_delete_patterns, 
+-- 	*[
+-- 		command,
+-- 		command_args_number,
+-- 		*command_args
+-- 	]
+-- )
+
+
+
 local keys_to_delete_patterns_number = tonumber(ARGV[1])
 local keys_to_delete
 

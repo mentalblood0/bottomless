@@ -1,3 +1,7 @@
+-- getByPattern(pattern)
+
+
+
 local keys = redis.call('keys', ARGV[1])
 local values = {}
 

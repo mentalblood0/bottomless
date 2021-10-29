@@ -1,3 +1,7 @@
+-- pexpireByPattern(pattern, milliseconds, *extra_keys)
+
+
+
 local keys = redis.call('keys', ARGV[1])
 
 for i,key in ipairs(keys) do 
