@@ -39,12 +39,12 @@ class RedisInterface:
 		self.__pathToKey = pathToKey
 		self.__keyToPath = keyToPath
 
-		self.__getByPattern = self.db.register_script(scripts.get('getByPattern'))
-		self.__set = self.db.register_script(scripts.get('set'))
-		self.__contains = self.db.register_script(scripts.get('contains'))
-
-	def _getByPattern(self, pattern):
-		return self.__getByPattern(args=[pattern])
+		self.__scripts = {}
+		script_caller_wrapper = lambda c: lambda *args: c(args=args)
+		for name, script in scripts.items():
+			script_caller = self.db.register_script(script)
+			wrapped_script_caller = script_caller_wrapper(script_caller)
+			self.__scripts[name] = wrapped_script_caller
 	
 	@property
 	def db(self):
@@ -165,16 +165,13 @@ class RedisInterface:
 	def __getitem__(self, key):
 		return self.__getitem([key])
 	
-	def _set(self, keys_to_delete_patterns, extra_keys_to_delete, pairs_to_set):
-
-		args = [
+	def composeSetArgs(self, keys_to_delete_patterns, extra_keys_to_delete, pairs_to_set):
+		return [
 			len(keys_to_delete_patterns),
 			*keys_to_delete_patterns, 
 			*(['DEL', len(extra_keys_to_delete), *extra_keys_to_delete] if extra_keys_to_delete else []), 
 			*(['MSET', len(pairs_to_set) * 2, *[e[i] for e in pairs_to_set.items() for i in (0, 1,)]] if pairs_to_set else [])
 		]
-
-		return self.__set(args=args)
 
 	def set(self, value, clear=True):
 		
@@ -213,7 +210,11 @@ class RedisInterface:
 		for k, v in pairs_to_set.items():
 			pairs_to_set[k] = self.__dumpType(v)
 		
-		self._set(keys_to_delete_patterns, list(extra_keys_to_delete), pairs_to_set)
+		self.__scripts['set'](*self.composeSetArgs(
+			keys_to_delete_patterns, 
+			list(extra_keys_to_delete), 
+			pairs_to_set
+		))
 
 	def __setitem__(self, key, value):
 
@@ -229,7 +230,11 @@ class RedisInterface:
 		if self.key == '':
 			self.db.flushdb()
 		else:
-			self._set([self.subkeys_pattern], [self.key], {})
+			self.__scripts['set'](*self.composeSetArgs(
+				keys_to_delete_patterns=[self.subkeys_pattern], 
+				extra_keys_to_delete=[self.key], 
+				pairs_to_set={}
+			))
 
 	def __delitem__(self, key):
 		self[key].clear()
@@ -251,7 +256,7 @@ class RedisInterface:
 			return self.__parseType(self_value)
 		
 		result = {}
-		subkeys, values = self._getByPattern(self.subkeys_pattern)
+		subkeys, values = self.__scripts['getByPattern'](self.subkeys_pattern)
 
 		for i in range(len(subkeys)):
 
@@ -270,11 +275,8 @@ class RedisInterface:
 		
 		return result or None
 	
-	def _contains(self, key):
-		return self.__contains(args=[key])
-	
 	def __contains__(self, key):
-		return self._contains(self[key].key)
+		return self.__scripts['contains'](self[key].key)
 	
 	def update(self, other: dict):
 		self.set(other, clear=False)
