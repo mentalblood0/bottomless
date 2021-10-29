@@ -1,10 +1,8 @@
-local keys = (redis.call('keys', ARGV[1]))
-local values={}
+local keys = redis.call('keys', ARGV[1])
+local values = {}
 
-for i,key in ipairs(keys) do 
-	local val = redis.call('GET', key)
-	values[i]=val
-	i=i+1
+for i,key in ipairs(keys) do
+	values[i] = redis.call('GET', key)
 end
 
 local result = {}

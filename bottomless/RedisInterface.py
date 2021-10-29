@@ -81,23 +81,6 @@ class RedisInterface:
 	@property
 	def keyToPath(self):
 		return self.__keyToPath
-
-	def pipe(self, pipeline=None):
-		self.__pipeline = pipeline or self.db.pipeline()
-	
-	def execute(self):
-		pipeline = self.__pipeline
-		self.__pipeline = None
-		pipeline.execute()
-	
-	def clone(self):
-		return RedisInterface(
-			db=self.db,
-			pathToKey=self.pathToKey,
-			keyToPath=self.keyToPath,
-			types_prefixes=self.types_prefixes,
-			default_type=self.default_type
-		)
 	
 	def __dumpType(self, value):
 
@@ -136,9 +119,7 @@ class RedisInterface:
 		}
 	
 	def expire(self, seconds):
-
-		for k in [self.key] + self.__absolute_keys():
-			self.db.pexpire(k, int(seconds * 1000))
+		self.__scripts['pexpireByPattern'](self.subkeys_pattern, int(seconds * 1000), self.key)
 	
 	def __getitem(self, subpath):
 
