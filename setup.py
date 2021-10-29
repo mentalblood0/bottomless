@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
 	setup(
 		name='bottomless',
-		version='0.3.0',
+		version='0.3.1',
 		description='Correct Redis Library',
 		long_description=long_description,
 		long_description_content_type='text/markdown',
@@ -21,5 +21,8 @@ if __name__ == '__main__':
 			'redis',
 			'flatten-dict'
 		],
-		packages=['bottomless']
+		packages=['bottomless', 'bottomless.scripts'],
+		package_data={
+			'bottomless.scripts': ['*.lua']
+		}
 	)

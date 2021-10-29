@@ -1,5 +1,3 @@
-local ARGV = {2, '1.*', '2.*', 'MSET', 6, '1.1.1', 'sone.one.one', '1.2', 'sone.two', '2', 'stwo'}
-
 local keys_to_delete_patterns_number = tonumber(ARGV[1])
 local keys_to_delete
 
@@ -10,12 +8,12 @@ for i,pattern in ipairs(ARGV) do
 		if i == (2 + keys_to_delete_patterns_number) then
 			break
 		end
-
-        print('DEL', pattern)
 		
-		-- keys_to_delete = redis.call('keys', pattern)
-		-- print('DEL', unpack(keys_to_delete))
-	
+		keys_to_delete = redis.call('keys', pattern)
+		if keys_to_delete[1] then
+			redis.call('DEL', unpack(keys_to_delete))
+		end
+
 	end
 
 end
@@ -35,7 +33,7 @@ for i,key in ipairs(ARGV) do
 					args[n] = key
 					n = n+1
 				else
-					print(command, table.unpack(args))
+					redis.call(command, unpack(args))
 					command = key
 					N = false
 					n = 1
@@ -48,4 +46,4 @@ for i,key in ipairs(ARGV) do
 	end
 end
 
-print(command, table.unpack(args))
+redis.call(command, unpack(args))

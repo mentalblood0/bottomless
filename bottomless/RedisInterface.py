@@ -1,7 +1,7 @@
 from redis import Redis
 from flatten_dict import flatten
 
-from . import Connection
+from . import Connection, scripts
 
 
 
@@ -39,81 +39,9 @@ class RedisInterface:
 		self.__pathToKey = pathToKey
 		self.__keyToPath = keyToPath
 
-		self.__getByPattern = self.db.register_script("""
-local keys = (redis.call('keys', ARGV[1]))
-local values={}
-
-for i,key in ipairs(keys) do 
-	local val = redis.call('GET', key)
-	values[i]=val
-	i=i+1
-end
-
-local result = {}
-result[1] = keys
-result[2] = values
-
-return result
-""")
-
-		self.__set = self.db.register_script("""
-local keys_to_delete_patterns_number = tonumber(ARGV[1])
-local keys_to_delete
-
-for i,pattern in ipairs(ARGV) do
-
-	if i > 1 then
-	
-		if i == (2 + keys_to_delete_patterns_number) then
-			break
-		end
-		
-		keys_to_delete = redis.call('keys', pattern)
-		if keys_to_delete[1] then
-			redis.call('DEL', unpack(keys_to_delete))
-		end
-
-	end
-
-end
-
-local command = false
-local N = false
-local n = 1
-local args = {}
-
-for i,key in ipairs(ARGV) do
-	if i >= (2 + keys_to_delete_patterns_number) then
-		if command then
-			if N == false then
-				N = tonumber(key)+1
-			else
-				if n ~= N then
-					args[n] = key
-					n = n+1
-				else
-					redis.call(command, unpack(args))
-					command = key
-					N = false
-					n = 1
-					args = {}
-				end
-			end
-		else
-			command = key
-		end
-	end
-end
-
-redis.call(command, unpack(args))
-""")
-
-		self.__contains = self.db.register_script("""
-local value = redis.call('GET', ARGV[1])
-local subkeys = (redis.call('KEYS', ARGV[1] .. '.*'))
-
-return value or subkeys[1]
-""")
+		self.__getByPattern = self.db.register_script(scripts.get('getByPattern'))
+		self.__set = self.db.register_script(scripts.get('set'))
+		self.__contains = self.db.register_script(scripts.get('contains'))
 
 	def _getByPattern(self, pattern):
 		return self.__getByPattern(args=[pattern])
