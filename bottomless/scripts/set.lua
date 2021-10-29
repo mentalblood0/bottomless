@@ -10,6 +10,31 @@
 
 
 
+local function redisSplitExecute(batch_size, command, t)
+    
+	local i = 1
+    local temp = {}
+    
+	while(i <= #t) do
+        
+        table.insert(temp, t[i])
+        
+		if #temp >= 1000 then
+            redis.call(command, unpack(temp))
+            temp = {}
+        end
+
+        i = i+1
+
+    end
+
+	if #temp > 0 then
+        redis.call(command, unpack(temp))
+    end
+
+end
+
+
 local keys_to_delete_patterns_number = tonumber(ARGV[1])
 local keys_to_delete
 
@@ -23,7 +48,7 @@ for i,pattern in ipairs(ARGV) do
 		
 		keys_to_delete = redis.call('keys', pattern)
 		if keys_to_delete[1] then
-			redis.call('DEL', unpack(keys_to_delete))
+			redisSplitExecute(1000, 'DEL', keys_to_delete)
 		end
 
 	end
@@ -45,7 +70,7 @@ for i,key in ipairs(ARGV) do
 					args[n] = key
 					n = n+1
 				else
-					redis.call(command, unpack(args))
+					redisSplitExecute(1000, command, args)
 					command = key
 					N = false
 					n = 1
@@ -58,4 +83,4 @@ for i,key in ipairs(ARGV) do
 	end
 end
 
-redis.call(command, unpack(args))
+redisSplitExecute(1000, command, args)
