@@ -10,7 +10,6 @@ class RedisInterface:
 	def __init__(
 		self, 
 		db, 
-		pipeline=None,
 		pathToKey=lambda path: '.'.join(path),
 		keyToPath=lambda key: key.split('.'),
 		types_prefixes={
