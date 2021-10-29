@@ -21,10 +21,6 @@ def test_all():
 		'types_prefixes',
 	]
 
-	private_without_getters = [
-		'pipeline'
-	]
-
 	for name in private_with_getters:
 		with pytest.raises(AttributeError):
 			setattr(interface, name, 'lalala')

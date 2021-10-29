@@ -24,7 +24,6 @@ class RedisInterface:
 		
 		self.__db = db if isinstance(db, Redis) else Redis.from_url(db)
 		self.__connection = Connection(self.db.connection_pool.connection_kwargs)
-		self.__pipeline = pipeline
 		self.__key = ''
 		self.__path = []
 		self.__types_prefixes = types_prefixes
