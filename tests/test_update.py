@@ -39,12 +39,14 @@ def test_not_dict():
 	key = 1
 
 	interface[key] = False
+	print(interface())
 	assert interface[key]() == False
 
 	interface[key] = {
 		'a': 1,
 		'b': 2
 	}
+	print(interface())
 	assert interface.db.get(interface[key].key) == None
 	assert interface[key]() == {
 		'a': 1,

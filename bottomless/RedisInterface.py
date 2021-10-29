@@ -57,12 +57,24 @@ return result
 """)
 
 		self.__set = self.db.register_script("""
-local keys = (redis.call('keys', ARGV[1]))
-local values={}
+local keys_to_delete_patterns_number = tonumber(ARGV[1])
+local keys_to_delete
 
-for i,key in ipairs(keys) do 
-	redis.call('DEL', key)
-	i=i+1
+for i,pattern in ipairs(ARGV) do
+
+	if i > 1 then
+	
+		if i == (2 + keys_to_delete_patterns_number) then
+			break
+		end
+		
+		keys_to_delete = redis.call('keys', pattern)
+		if keys_to_delete[1] then
+			redis.call('DEL', unpack(keys_to_delete))
+		end
+
+	end
+
 end
 
 local command = false
@@ -71,7 +83,7 @@ local n = 1
 local args = {}
 
 for i,key in ipairs(ARGV) do
-	if i ~= 1 then
+	if i >= (2 + keys_to_delete_patterns_number) then
 		if command then
 			if N == false then
 				N = tonumber(key)+1
@@ -225,51 +237,57 @@ return value or subkeys[1]
 	def __getitem__(self, key):
 		return self.__getitem([key])
 	
-	def _set(self, keys_to_delete_pattern, extra_keys_to_delete, pairs_to_set):
+	def _set(self, keys_to_delete_patterns, extra_keys_to_delete, pairs_to_set):
 
 		args = [
-			keys_to_delete_pattern, 
+			len(keys_to_delete_patterns),
+			*keys_to_delete_patterns, 
 			*(['DEL', len(extra_keys_to_delete), *extra_keys_to_delete] if extra_keys_to_delete else []), 
 			*(['MSET', len(pairs_to_set) * 2, *[e[i] for e in pairs_to_set.items() for i in (0, 1,)]] if pairs_to_set else [])
 		]
 
+		print('_set', args)
+
 		return self.__set(args=args)
 
 	def set(self, value, clear=True):
-
+		
 		pairs_to_set = {}
-		keys_to_delete = []
-
-		keys_to_delete_pattern = ''
+		keys_to_delete_patterns = set()
+		extra_keys_to_delete = set()
 		
 		if (type(value) == dict) or (type(value) == list):
-			
-			if clear:
-				keys_to_delete_pattern = self.subkeys_pattern
-			else:
-				keys_to_delete_pattern = f'{self.subkeys_pattern}.*'
 			
 			pairs_to_set = {
 				self.pathToKey(self.path + [str(p) for p in path]): v
 				for path, v in flatten(value, enumerate_types=(list,)).items()
 			}
+
+			extra_keys_to_delete |= {self.key}
+
+			if clear:
+				keys_to_delete_patterns = [self.subkeys_pattern]
+			else:
+				for new_key in pairs_to_set:
+					new_path = self.keyToPath(new_key)
+					short_new_key = self.pathToKey(new_path[:len(self.path)+1])
+					keys_to_delete_patterns |= {f'{short_new_key}.*'}
 		
 		else:
-			keys_to_delete_pattern = self.subkeys_pattern
+			keys_to_delete_patterns = [self.subkeys_pattern]
 			pairs_to_set[self.key] = value
 		
 		# (self.path == ['a', 'b', 'c']) => (delete keys ['a', 'a.b', 'a.b.c'])
-		parent_keys = {
+		extra_keys_to_delete |= {
 			self.pathToKey(self.keyToPath(key)[:i+1])
 			for key in pairs_to_set
 			for i in range(len(self.keyToPath(key)))
 		}
-		keys_to_delete += parent_keys
 
 		for k, v in pairs_to_set.items():
 			pairs_to_set[k] = self.__dumpType(v)
 		
-		self._set(keys_to_delete_pattern, list(parent_keys), pairs_to_set)
+		self._set(keys_to_delete_patterns, list(extra_keys_to_delete), pairs_to_set)
 
 	def __setitem__(self, key, value):
 
@@ -285,7 +303,7 @@ return value or subkeys[1]
 		if self.key == '':
 			self.db.flushdb()
 		else:
-			self._set(self.subkeys_pattern, [self.key], {})
+			self._set([self.subkeys_pattern], [self.key], {})
 
 	def __delitem__(self, key):
 		self[key].clear()

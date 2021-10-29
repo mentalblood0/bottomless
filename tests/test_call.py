@@ -24,6 +24,8 @@ def test_deep():
 	interface['1']['1']['1'] = 'one.one.one'
 	interface['1']['2'] = 'one.two'
 
+	print(interface.db.keys())
+	print(interface())
 	assert interface() == {
 		'1': {
 			'1': {
