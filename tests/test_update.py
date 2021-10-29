@@ -31,6 +31,17 @@ def test_basic():
 	}
 
 
+def test_massive():
+
+	interface = RedisInterface(config['db']['url'])
+	interface.clear()
+
+	interface |= {
+		i+1: i+1
+		for i in range(10000)
+	}
+
+
 def test_not_dict():
 
 	interface = RedisInterface(config['db']['url'])
