@@ -1,6 +1,7 @@
-# ⚿ bottomless 
+# <span style="color:silver">⚿</span> bottomless 
 
 Library for seamless Redis database management
+This is the original version. It is not so fast and fancy as [bottomless_ReJSON](https://github.com/mentalblood/bottomless_ReJSON), but more clean and elegant
 
 <br/>
 
